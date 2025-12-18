@@ -35,12 +35,15 @@ export interface Event {
   time: string;
   maxEnrolled: number;
   participants: EventParticipant[];
+  status?: 'scheduled' | 'finalized';
 }
 
 export interface Transaction {
   id: string;
   playerId: string;
   type: 'credit' | 'debit';
+  category?: 'product' | 'event' | 'deposit' | 'adjustment';
+  eventId?: string;
   title: string;
   date: string; // ISO String
   amount: number;

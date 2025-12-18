@@ -145,6 +145,7 @@ interface StoreContextType {
   addParticipantToEvent: (eventId: string, player: Player) => void;
   removeParticipantFromEvent: (eventId: string, playerId: string) => void;
   toggleEventPayment: (eventId: string, playerId: string) => void;
+  finalizeEvent: (eventId: string) => { processed: number; total: number };
   storeProfile: { name: string; avatarUrl: string; role: string };
   updateStoreProfile: (profile: Partial<{ name: string; avatarUrl: string; role: string }>) => void;
   storeSettings: StoreSettings;
@@ -247,6 +248,78 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }));
   }, [setEvents]);
 
+  const finalizeEvent = useCallback((eventId: string) => {
+    let processedCount = 0;
+    let totalAmount = 0;
+
+    const event = events.find(e => e.id === eventId);
+    if (!event) throw new Error('Evento não encontrado');
+    if (event.status === 'finalized') throw new Error('Evento já finalizado');
+
+    const pendingParticipants = event.participants.filter(p => !p.paid);
+
+    if (pendingParticipants.length === 0) {
+      // Just mark as finalized if everyone paid
+      setEvents(prev => prev.map(evt =>
+        evt.id === eventId ? { ...evt, status: 'finalized' } : evt
+      ));
+      return { processed: 0, total: 0 };
+    }
+
+    setTransactions(prev => {
+      const newTransactions: Transaction[] = [];
+
+      pendingParticipants.forEach(participant => {
+        newTransactions.push({
+          id: uuidv4(),
+          playerId: participant.playerId,
+          type: 'debit',
+          category: 'event',
+          eventId: eventId,
+          title: `Inscrição: ${event.title}`,
+          date: new Date().toISOString(),
+          amount: event.price,
+          icon: 'emoji_events'
+        });
+        processedCount++;
+        totalAmount += event.price;
+      });
+
+      return [...newTransactions, ...prev];
+    });
+
+    // Update players balances
+    setPlayers(prev => prev.map(player => {
+      const participant = pendingParticipants.find(p => p.playerId === player.id);
+      if (participant) {
+        return {
+          ...player,
+          balance: player.balance - event.price,
+          lastActivity: new Date().toISOString()
+        };
+      }
+      return player;
+    }));
+
+    // Update event status and mark participants as paid (via debt)
+    setEvents(prev => prev.map(evt => {
+      if (evt.id === eventId) {
+        return {
+          ...evt,
+          status: 'finalized',
+          participants: evt.participants.map(p =>
+            pendingParticipants.some(pending => pending.playerId === p.playerId)
+              ? { ...p, paid: true }
+              : p
+          )
+        };
+      }
+      return evt;
+    }));
+
+    return { processed: processedCount, total: totalAmount };
+  }, [events, setEvents, setTransactions, setPlayers]);
+
   const addTransaction = useCallback((transaction: Transaction) => {
     try {
       setTransactions(prev => [transaction, ...prev]);
@@ -336,6 +409,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     addParticipantToEvent,
     removeParticipantFromEvent,
     toggleEventPayment,
+    finalizeEvent,
     updateStoreProfile,
     updateStoreSettings,
     resetStore
@@ -356,6 +430,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     addParticipantToEvent,
     removeParticipantFromEvent,
     toggleEventPayment,
+    finalizeEvent,
     updateStoreProfile,
     updateStoreSettings,
     resetStore

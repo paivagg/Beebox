@@ -16,6 +16,19 @@ const POS: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [step, setStep] = useState<'select-player' | 'select-products' | 'review'>('select-player');
 
+  // Confirmation Modal State
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'account'>('cash');
+  const [confirmData, setConfirmData] = useState<{
+    productTotal: number;
+    eventTotal: number;
+    total: number;
+    playerBalance: number;
+    creditUsed: number;
+    productRemaining: number;
+    totalRemaining: number;
+  } | null>(null);
+
   const filteredPlayers = players.filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.nickname.toLowerCase().includes(searchQuery.toLowerCase())
@@ -61,37 +74,123 @@ const POS: React.FC = () => {
   const handleCheckout = useCallback(() => {
     if (!selectedPlayer) return;
 
+    // 1. Validate Stock
+    for (const item of cart) {
+      if (!validateStock(item.id, item.quantity, products)) {
+        error(`${ERROR_MESSAGES.STOCK_INSUFFICIENT}: ${item.name}`);
+        return;
+      }
+    }
+
+    // 2. Separate items by category
+    const isEventItem = (item: CartItem) =>
+      item.category === 'Event' ||
+      item.name.toLowerCase().includes('torneio') ||
+      item.name.toLowerCase().includes('evento') ||
+      item.name.toLowerCase().includes('inscrição');
+
+    const eventCartItems = cart.filter(isEventItem);
+    const productCartItems = cart.filter(i => !isEventItem(i));
+
+    const eventTotal = eventCartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    const productTotal = productCartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+
+    // 3. Calculate Payment Details
+    const playerCredit = selectedPlayer.balance > 0 ? selectedPlayer.balance : 0;
+    const creditUsed = Math.min(playerCredit, productTotal);
+    const productRemaining = productTotal - creditUsed;
+    const totalRemaining = productRemaining + eventTotal;
+
+    setConfirmData({
+      productTotal,
+      eventTotal,
+      total,
+      playerBalance: selectedPlayer.balance,
+      creditUsed,
+      productRemaining,
+      totalRemaining
+    });
+    setPaymentMethod('cash'); // Default to cash for difference
+    setIsConfirmModalOpen(true);
+  }, [selectedPlayer, cart, products, total, error]);
+
+  const handleConfirmSale = useCallback(() => {
+    if (!selectedPlayer || !confirmData) return;
+
     try {
-      // Verificar estoque de todos os itens antes de processar
-      for (const item of cart) {
-        if (!validateStock(item.id, item.quantity, products)) {
-          error(`${ERROR_MESSAGES.STOCK_INSUFFICIENT}: ${item.name}`);
-          return;
-        }
+      const isEventItem = (item: CartItem) =>
+        item.category === 'Event' ||
+        item.name.toLowerCase().includes('torneio') ||
+        item.name.toLowerCase().includes('campeonato') ||
+        item.name.toLowerCase().includes('inscrição');
+
+      const eventCartItems = cart.filter(isEventItem);
+      const productCartItems = cart.filter(i => !isEventItem(i));
+
+      // Determine amounts to debit based on payment method
+      let debitProductAmount = confirmData.productTotal;
+      let debitEventAmount = confirmData.eventTotal;
+
+      if (paymentMethod === 'cash') {
+        // If paying difference in cash, we only debit what was covered by credit
+        debitProductAmount = confirmData.creditUsed;
+        debitEventAmount = 0; // Paid fully in cash
+      }
+      // If paymentMethod === 'account', we debit full amounts (default)
+
+      // Create Transactions
+      // 1. Products
+      if (productCartItems.length > 0 && debitProductAmount > 0) {
+        addTransaction({
+          id: crypto.randomUUID(),
+          playerId: selectedPlayer.id,
+          type: 'debit',
+          category: 'product',
+          title: 'Compra de Produtos',
+          amount: debitProductAmount,
+          date: new Date().toISOString(),
+          icon: 'shopping_cart'
+        });
       }
 
-      // Create a transaction for the sale
-      addTransaction({
-        id: crypto.randomUUID(),
-        playerId: selectedPlayer.id,
-        type: 'debit',
-        title: 'Compra na Loja',
-        amount: total,
-        date: new Date().toISOString(),
-        icon: 'shopping_cart'
-      });
+      // Always update stock for products regardless of payment method
+      if (productCartItems.length > 0) {
+        productCartItems.forEach(item => {
+          updateProductStock(item.id, -item.quantity);
+        });
+      }
 
-      // Update stocks
-      cart.forEach(item => {
-        updateProductStock(item.id, -item.quantity);
-      });
+      // 2. Events
+      if (eventCartItems.length > 0 && debitEventAmount > 0) {
+        addTransaction({
+          id: crypto.randomUUID(),
+          playerId: selectedPlayer.id,
+          type: 'debit',
+          category: 'event',
+          title: 'Inscrição em Evento/Torneio',
+          amount: debitEventAmount,
+          date: new Date().toISOString(),
+          icon: 'emoji_events'
+        });
+      }
 
+      if (eventCartItems.length > 0) {
+        eventCartItems.forEach(item => {
+          updateProductStock(item.id, -item.quantity);
+        });
+      }
+
+      setIsConfirmModalOpen(false);
+      setCart([]);
+      setSelectedPlayer(null);
+      setStep('select-player');
+      setConfirmData(null);
+      setPaymentMethod('cash');
       success(SUCCESS_MESSAGES.SALE_COMPLETED);
-      navigate('/dashboard');
     } catch (err) {
       error('Erro ao processar venda: ' + (err instanceof Error ? err.message : 'Erro desconhecido'));
     }
-  }, [selectedPlayer, cart, products, total, addTransaction, updateProductStock, navigate, success, error]);
+  }, [selectedPlayer, confirmData, cart, addTransaction, updateProductStock, navigate, success, error, paymentMethod]);
 
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
@@ -222,6 +321,97 @@ const POS: React.FC = () => {
           >
             {step === 'select-products' ? 'Ver Carrinho' : 'Confirmar Venda'}
           </button>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {isConfirmModalOpen && confirmData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setIsConfirmModalOpen(false)}>
+          <div
+            className="glass-card w-full max-w-sm rounded-3xl p-6 border border-white/10 shadow-2xl animate-zoom-in flex flex-col"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex flex-col items-center mb-4">
+              <div className="h-16 w-16 rounded-full bg-primary/20 flex items-center justify-center mb-4 text-primary">
+                <span className="material-symbols-outlined text-3xl">shopping_cart_checkout</span>
+              </div>
+              <h3 className="text-xl font-bold text-white text-center">Confirmar Venda?</h3>
+            </div>
+
+            <div className="bg-white/5 rounded-2xl p-4 mb-6 space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">Produtos:</span>
+                <span className="text-white font-bold">R$ {confirmData.productTotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">Eventos/Torneios:</span>
+                <span className="text-white font-bold">R$ {confirmData.eventTotal.toFixed(2)}</span>
+              </div>
+              <div className="h-px bg-white/10 my-2"></div>
+              <div className="flex justify-between text-base">
+                <span className="text-gray-300 font-bold">Total:</span>
+                <span className="text-primary font-bold text-lg">R$ {confirmData.total.toFixed(2)}</span>
+              </div>
+
+              <div className="mt-4 pt-2 border-t border-white/10">
+                <p className="text-xs text-gray-500 uppercase font-bold mb-2">Pagamento</p>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Crédito Utilizado:</span>
+                  <span className="text-positive font-bold">- R$ {confirmData.creditUsed.toFixed(2)}</span>
+                </div>
+
+                {confirmData.totalRemaining > 0 && (
+                  <div className="mt-3 bg-black/20 p-3 rounded-xl">
+                    <p className="text-xs text-gray-400 mb-2">Como pagar o restante (R$ {confirmData.totalRemaining.toFixed(2)})?</p>
+                    <div className="flex flex-col gap-2">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          checked={paymentMethod === 'cash'}
+                          onChange={() => setPaymentMethod('cash')}
+                          className="accent-primary"
+                        />
+                        <span className="text-sm text-white">Dinheiro / Pix (À Vista)</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          checked={paymentMethod === 'account'}
+                          onChange={() => setPaymentMethod('account')}
+                          className="accent-primary"
+                        />
+                        <span className="text-sm text-white">Debitar na Conta (Saldo Negativo)</span>
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+                {confirmData.totalRemaining === 0 && (
+                  <div className="flex justify-between text-sm mt-1">
+                    <span className="text-gray-400">A Pagar:</span>
+                    <span className="text-white font-bold">R$ 0,00</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setIsConfirmModalOpen(false)}
+                className="flex-1 py-3.5 rounded-2xl bg-white/5 text-white font-medium hover:bg-white/10 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmSale}
+                className="flex-1 py-3.5 rounded-2xl bg-primary text-white font-bold shadow-lg shadow-primary/30 active:scale-95 transition-all"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
