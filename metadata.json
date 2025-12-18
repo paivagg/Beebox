@@ -1,0 +1,5 @@
+{
+  "name": "TCG Store Manager",
+  "description": "A comprehensive dashboard for managing a Trading Card Game store, including inventory, events, and player profiles.",
+  "requestFramePermissions": []
+}

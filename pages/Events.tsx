@@ -1,0 +1,208 @@
+
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useStore } from '../context/StoreContext';
+import { Event } from '../types';
+
+const Events: React.FC = () => {
+  const [filter, setFilter] = useState<'upcoming' | 'past'>('upcoming');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Create Event Form State
+  const [title, setTitle] = useState('');
+  const [date, setDate] = useState('');
+  const [price, setPrice] = useState('');
+
+  const navigate = useNavigate();
+  const { events, addEvent } = useStore();
+
+  const now = new Date();
+
+  const filteredEvents = events.filter(e => {
+    const eventDate = new Date(e.date);
+    return filter === 'upcoming' ? eventDate >= now : eventDate < now;
+  }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const getDay = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.getDate().toString().padStart(2, '0');
+  };
+
+  const getMonth = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleString('pt-BR', { month: 'short' }).toUpperCase().replace('.', '');
+  };
+
+  const getWeekDay = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleString('pt-BR', { weekday: 'short' }).toUpperCase().replace('.', '');
+  };
+
+  const handleCreateEvent = () => {
+    if (!title) return;
+
+    // Use current date if not provided
+    const finalDate = date || new Date().toISOString().split('T')[0];
+    const dummyTime = '12:00'; 
+
+    const newEvent: Event = {
+      id: Date.now().toString(),
+      title,
+      date: new Date(`${finalDate}T${dummyTime}`).toISOString(),
+      time: dummyTime,
+      price: price ? parseFloat(price.replace(',', '.')) : 0,
+      participants: [],
+      maxEnrolled: 0,
+    };
+
+    addEvent(newEvent);
+    setIsModalOpen(false);
+    setTitle('');
+    setDate('');
+    setPrice('');
+  };
+
+  return (
+    <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+      <div className="px-4 pt-8 pb-4 sticky top-0 z-20">
+        <div className="flex justify-between items-center mb-6 pl-1">
+          <h1 className="text-3xl font-bold tracking-tighter text-white drop-shadow-md">Eventos</h1>
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center justify-center h-10 w-10 bg-primary/80 backdrop-blur rounded-full shadow-lg hover:bg-primary transition-all"
+          >
+            <span className="material-symbols-outlined text-white">add</span>
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div className="glass flex h-12 w-full items-center justify-center rounded-2xl p-1.5">
+          <button 
+            onClick={() => setFilter('upcoming')}
+            className={`flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-xl px-2 text-sm font-medium leading-normal transition-all ${
+              filter === 'upcoming' 
+                ? 'bg-white/10 shadow-sm text-white' 
+                : 'text-text-secondary-dark hover:text-white'
+            }`}
+          >
+            <span className="truncate">Próximos</span>
+          </button>
+          <button 
+            onClick={() => setFilter('past')}
+            className={`flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-xl px-2 text-sm font-medium leading-normal transition-all ${
+              filter === 'past' 
+                ? 'bg-white/10 shadow-sm text-white' 
+                : 'text-text-secondary-dark hover:text-white'
+            }`}
+          >
+            <span className="truncate">Anteriores</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Event List */}
+      <div className="flex flex-col gap-4 pb-24 px-4 pt-2">
+        {filteredEvents.map(event => (
+          <div 
+            key={event.id} 
+            onClick={() => navigate(`/events/${event.id}`)}
+            className="glass-card flex items-center justify-start rounded-2xl p-4 gap-4 cursor-pointer hover:bg-white/5 transition-colors active:scale-[0.99]"
+          >
+            <div className="flex flex-col items-center justify-center w-16 text-center rounded-xl bg-white/5 py-2 border border-white/5">
+              <p className="text-text-secondary-dark text-xs font-bold uppercase leading-normal">{getWeekDay(event.date)}</p>
+              <p className="text-primary text-2xl font-bold leading-tight tracking-[-0.015em]">{getDay(event.date)}</p>
+              <p className="text-text-secondary-dark text-xs font-bold uppercase leading-normal">{getMonth(event.date)}</p>
+            </div>
+            <div className="flex-1">
+              <p className="text-white text-lg font-bold leading-tight tracking-[-0.015em] line-clamp-2">{event.title}</p>
+              <div className="flex flex-col gap-1 mt-1">
+                 <p className="text-text-secondary-dark text-sm font-normal leading-normal">
+                  R$ {event.price.toFixed(2).replace('.', ',')}
+                </p>
+                <div className="inline-flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[16px] text-text-secondary-dark">group</span>
+                  <p className="text-text-secondary-dark text-xs font-medium leading-normal">
+                    {event.participants.length} inscritos
+                  </p>
+                </div>
+              </div>
+            </div>
+            <button className="flex items-center justify-center h-10 w-10 text-text-secondary-dark/50">
+              <span className="material-symbols-outlined">arrow_forward_ios</span>
+            </button>
+          </div>
+        ))}
+        
+        {filteredEvents.length === 0 && (
+          <div className="text-center text-gray-400 mt-10 p-6 glass-card rounded-2xl">
+            Nenhum evento encontrado.
+          </div>
+        )}
+      </div>
+
+      {/* New Event Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setIsModalOpen(false)}>
+          <div 
+            className="glass-card w-full max-w-sm rounded-3xl p-6 border border-white/10 shadow-2xl animate-zoom-in flex flex-col"
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-bold text-white mb-6 text-center">Novo Evento</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm text-gray-400 block mb-2 pl-1">Nome</label>
+                <input 
+                  className="glass-input w-full rounded-2xl p-4 text-white placeholder:text-gray-600"
+                  placeholder="Ex: Torneio Modern"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <label className="text-sm text-gray-400 block mb-2 pl-1">Data</label>
+                <input 
+                  className="glass-input w-full rounded-2xl p-4 text-white placeholder:text-gray-600"
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="text-sm text-gray-400 block mb-2 pl-1">Inscrição (R$)</label>
+                <input 
+                  className="glass-input w-full rounded-2xl p-4 text-white placeholder:text-gray-600"
+                  type="number"
+                  placeholder="0,00"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                />
+              </div>
+              
+              <div className="flex gap-3 pt-4">
+                <button 
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex-1 py-3.5 rounded-2xl bg-white/5 text-white font-medium hover:bg-white/10 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={handleCreateEvent}
+                  disabled={!title}
+                  className="flex-1 py-3.5 rounded-2xl bg-primary text-white font-bold shadow-lg shadow-primary/30 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale"
+                >
+                  Criar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Events;
