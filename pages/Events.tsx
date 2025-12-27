@@ -7,6 +7,7 @@ import { Event } from '../types';
 
 const Events: React.FC = () => {
   const [filter, setFilter] = useState<'upcoming' | 'past'>('upcoming');
+  const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Create Event Form State
@@ -40,7 +41,9 @@ const Events: React.FC = () => {
   const filteredEvents = events.filter(e => {
     const eventDate = new Date(e.date);
     const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
-    return filter === 'upcoming' ? eventDay >= todayStart : eventDay < todayStart;
+    const matchesFilter = filter === 'upcoming' ? eventDay >= todayStart : eventDay < todayStart;
+    const matchesSearch = e.title.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesFilter && matchesSearch;
   }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   const getDay = (dateStr: string) => {
@@ -109,12 +112,33 @@ const Events: React.FC = () => {
       <div className="px-4 pt-8 pb-4 sticky top-0 z-20 md:static md:px-0 md:mb-4">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center drop-shadow-md md:text-left md:text-3xl md:flex-none">Eventos</h1>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center justify-center h-10 w-10 bg-primary rounded-2xl shadow-lg hover:bg-orange-600 active:scale-95 transition-all"
-          >
-            <span className="material-symbols-outlined text-white">add</span>
-          </button>
+        </div>
+
+        <div className="mb-6">
+          <label className="relative flex w-full h-14">
+            {/* Search Icon */}
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-5 z-10">
+              <span className="material-symbols-outlined text-gray-500">search</span>
+            </div>
+
+            {/* Input */}
+            <input
+              className="glass-input w-full rounded-2xl pl-14 pr-14 text-base placeholder:text-gray-600 h-14 transition-all focus:border-primary/50 bg-black/20"
+              placeholder="Buscar evento..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+
+            {/* Add Button inside Search Bar */}
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="absolute inset-y-0 right-0 flex items-center pr-2 z-10"
+            >
+              <div className="flex items-center justify-center h-10 w-10 bg-primary rounded-xl shadow-lg hover:bg-orange-600 active:scale-95 transition-all">
+                <span className="material-symbols-outlined text-white text-2xl">add</span>
+              </div>
+            </button>
+          </label>
         </div>
 
         {/* Tabs */}

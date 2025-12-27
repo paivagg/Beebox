@@ -40,30 +40,26 @@ const SalesHistory: React.FC = () => {
             <span className="material-symbols-outlined text-lg">arrow_back_ios_new</span>
           </button>
           <h1 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center drop-shadow-md md:text-left md:text-3xl md:flex-none">Histórico de Vendas</h1>
-          <button
-            onClick={resetAnalytics}
-            className="glass flex h-10 w-10 items-center justify-center rounded-full text-white hover:bg-red-500/20 transition-colors"
-            title="Limpar Histórico"
-          >
-            <span className="material-symbols-outlined text-lg">delete_sweep</span>
-          </button>
-          <div className="w-2 md:hidden"></div>
+          <div className="w-10 md:hidden"></div>
         </div>
       </header>
 
       <main className="flex-1 px-4 pb-4 pt-2">
         <div className="mb-6">
-          <div className="relative flex w-full h-12">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 z-10">
-              <span className="material-symbols-outlined text-gray-400">search</span>
+          <label className="relative flex w-full h-14">
+            {/* Search Icon */}
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-5 z-10">
+              <span className="material-symbols-outlined text-gray-500">search</span>
             </div>
+
+            {/* Input */}
             <input
-              className="glass-input w-full rounded-2xl pl-12 pr-4 text-base placeholder:text-gray-500 h-12 transition-all focus:border-primary/50"
+              className="glass-input w-full rounded-2xl pl-14 pr-4 text-base placeholder:text-gray-600 h-14 transition-all focus:border-primary/50 bg-black/20"
               placeholder="Buscar por cliente ou item..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-          </div>
+          </label>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">

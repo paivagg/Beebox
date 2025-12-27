@@ -32,13 +32,7 @@ export const Analytics: React.FC = () => {
                         <span className="material-symbols-outlined">arrow_back</span>
                     </button>
                     <h1 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center drop-shadow-md md:text-left md:text-3xl md:flex-none">Analytics</h1>
-                    <button
-                        onClick={resetAnalytics}
-                        className="glass flex items-center justify-center rounded-full h-10 w-10 text-white hover:bg-red-500/20 transition-colors"
-                        title="Reset Analytics"
-                    >
-                        <span className="material-symbols-outlined">restart_alt</span>
-                    </button>
+                    <div className="w-10 md:hidden"></div>
                 </div>
 
                 {/* Period Selector */}

@@ -111,21 +111,21 @@ const Products: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 flex flex-col flex-1 min-w-0 justify-between">
-              <div className="flex flex-col gap-1">
-                <p className="text-white text-sm font-bold leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+            <div className="p-3 sm:p-4 flex flex-col flex-1 min-w-0 justify-between">
+              <div className="flex flex-col gap-0.5 sm:gap-1">
+                <p className="text-white text-xs sm:text-sm font-bold leading-tight line-clamp-2 group-hover:text-primary transition-colors">
                   {product.name}
                 </p>
-                <p className={`text-[9px] font-black uppercase tracking-widest ${product.stock <= 5 ? 'text-negative' : 'text-gray-500'}`}>
+                <p className={`text-[8px] sm:text-[9px] font-black uppercase tracking-widest ${product.stock <= 5 ? 'text-negative' : 'text-gray-500'}`}>
                   ESTOQUE: {product.stock} UN
                 </p>
               </div>
 
-              <div className="flex items-center justify-between mt-2">
-                <p className="text-primary font-black text-lg tracking-tighter">
+              <div className="flex items-center justify-between mt-1 sm:mt-2">
+                <p className="text-primary font-black text-base sm:text-lg tracking-tighter">
                   R$ {product.price.toFixed(2).replace('.', ',')}
                 </p>
-                <span className="material-symbols-outlined text-gray-600 text-lg group-hover:text-white transition-colors">edit</span>
+                <span className="material-symbols-outlined text-gray-600 text-base sm:text-lg group-hover:text-white transition-colors">edit</span>
               </div>
             </div>
           </div>

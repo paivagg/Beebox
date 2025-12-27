@@ -276,13 +276,20 @@ const POS: React.FC = () => {
       <main className="flex-1 px-4 pb-28 pt-2">
         {step === 'select-player' && (
           <div className="flex flex-col gap-4 animate-fade-in">
-            <input
-              className="glass-input w-full rounded-2xl p-4 text-white placeholder:text-gray-400"
-              placeholder="Buscar cliente..."
-              autoFocus
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-            />
+            <div className="mb-2">
+              <label className="relative flex w-full h-14">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-5 z-10">
+                  <span className="material-symbols-outlined text-gray-500">search</span>
+                </div>
+                <input
+                  className="glass-input w-full rounded-2xl pl-14 pr-4 text-base placeholder:text-gray-600 h-14 transition-all focus:border-primary/50 bg-black/20"
+                  placeholder="Buscar cliente..."
+                  autoFocus
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                />
+              </label>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
               {filteredPlayers.map(player => (
                 <div
@@ -306,12 +313,19 @@ const POS: React.FC = () => {
 
         {step === 'select-products' && (
           <div className="flex flex-col gap-4 animate-fade-in">
-            <input
-              className="glass-input w-full rounded-2xl p-4 text-white placeholder:text-gray-400"
-              placeholder="Buscar produto..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-            />
+            <div className="mb-2">
+              <label className="relative flex w-full h-14">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-5 z-10">
+                  <span className="material-symbols-outlined text-gray-500">search</span>
+                </div>
+                <input
+                  className="glass-input w-full rounded-2xl pl-14 pr-4 text-base placeholder:text-gray-600 h-14 transition-all focus:border-primary/50 bg-black/20"
+                  placeholder="Buscar produto..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                />
+              </label>
+            </div>
 
             <div className="flex flex-col gap-4">
               <button
