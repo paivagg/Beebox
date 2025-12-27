@@ -97,12 +97,12 @@ const Players: React.FC = () => {
         <label className="relative flex w-full h-12">
           {/* Search Icon */}
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 z-10">
-            <span className="material-symbols-outlined text-gray-400">search</span>
+            <span className="material-symbols-outlined text-gray-500">search</span>
           </div>
 
           {/* Input */}
           <input
-            className="glass-input w-full rounded-2xl pl-12 pr-12 text-base placeholder:text-gray-500 h-12 transition-all focus:border-primary/50"
+            className="glass-input w-full rounded-2xl pl-14 pr-14 text-base placeholder:text-gray-500 h-12 transition-all focus:border-primary/50"
             placeholder="Buscar jogador..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}

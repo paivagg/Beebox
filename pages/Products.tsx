@@ -92,28 +92,28 @@ const Products: React.FC = () => {
         </div>
       </div>
 
-      <main className="flex-grow px-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 pb-24 max-w-[1400px] mx-auto w-full">
+      <main className="flex-grow px-4 grid grid-cols-2 lg:grid-cols-3 gap-4 pb-24 max-w-[1400px] mx-auto w-full">
         {filteredProducts.map(product => (
           <div
             key={product.id}
             onClick={() => navigate(`/products/edit/${product.id}`)}
-            className="glass-card rounded-[2rem] overflow-hidden transition-all duration-300 hover:translate-y-[-4px] active:scale-[0.98] cursor-pointer hover:bg-white/5 group border border-white/5 flex flex-col shadow-lg hover:shadow-primary/5"
+            className="glass-card rounded-2xl overflow-hidden transition-all duration-300 hover:translate-y-[-2px] active:scale-[0.98] cursor-pointer hover:bg-white/5 group border border-white/5 flex flex-row shadow-lg"
           >
-            <div className="relative aspect-[4/5] w-full overflow-hidden">
+            <div className="relative h-24 w-24 sm:h-32 sm:w-32 shrink-0 overflow-hidden">
               <div
                 className="h-full w-full bg-cover bg-center bg-no-repeat transition-transform duration-700 group-hover:scale-110"
                 style={{ backgroundImage: `url("${product.image_url}")` }}
               ></div>
-              <div className="absolute top-3 right-3">
-                <div className="bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg text-[9px] font-black text-white uppercase tracking-widest border border-white/10 shadow-lg">
+              <div className="absolute top-2 left-2">
+                <div className="bg-black/60 backdrop-blur-md px-1.5 py-0.5 rounded-md text-[8px] font-black text-white uppercase tracking-widest border border-white/10 shadow-lg">
                   {product.category}
                 </div>
               </div>
             </div>
 
-            <div className="p-4 flex flex-col flex-1">
-              <div className="flex-1">
-                <p className="text-white text-sm font-bold leading-tight line-clamp-2 group-hover:text-primary transition-colors mb-1">
+            <div className="p-4 flex flex-col flex-1 min-w-0 justify-between">
+              <div className="flex flex-col gap-1">
+                <p className="text-white text-sm font-bold leading-tight line-clamp-2 group-hover:text-primary transition-colors">
                   {product.name}
                 </p>
                 <p className={`text-[9px] font-black uppercase tracking-widest ${product.stock <= 5 ? 'text-negative' : 'text-gray-500'}`}>
@@ -121,8 +121,8 @@ const Products: React.FC = () => {
                 </p>
               </div>
 
-              <div className="flex items-center justify-between mt-4">
-                <p className="text-primary font-black text-xl tracking-tighter">
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-primary font-black text-lg tracking-tighter">
                   R$ {product.price.toFixed(2).replace('.', ',')}
                 </p>
                 <span className="material-symbols-outlined text-gray-600 text-lg group-hover:text-white transition-colors">edit</span>
