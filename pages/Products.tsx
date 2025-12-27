@@ -49,16 +49,16 @@ const Products: React.FC = () => {
           <h1 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center drop-shadow-md md:text-left md:text-3xl md:flex-none">Produtos</h1>
         </div>
 
-        <div className="mb-4">
-          <label className="relative flex w-full h-12">
+        <div className="mb-6">
+          <label className="relative flex w-full h-14">
             {/* Search Icon */}
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 z-10">
-              <span className="material-symbols-outlined text-gray-400">search</span>
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-5 z-10">
+              <span className="material-symbols-outlined text-gray-500">search</span>
             </div>
 
             {/* Input */}
             <input
-              className="glass-input w-full rounded-2xl pl-12 pr-12 text-base placeholder:text-gray-500 h-12 transition-all focus:border-primary/50"
+              className="glass-input w-full rounded-2xl pl-14 pr-14 text-base placeholder:text-gray-600 h-14 transition-all focus:border-primary/50 bg-black/20"
               placeholder="Buscar por nome ou código..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -69,63 +69,63 @@ const Products: React.FC = () => {
               onClick={() => setIsModalOpen(true)}
               className="absolute inset-y-0 right-0 flex items-center pr-2 z-10"
             >
-              <div className="flex items-center justify-center h-10 w-10 bg-primary rounded-2xl shadow-lg hover:bg-orange-600 active:scale-95 transition-all">
-                <span className="material-symbols-outlined text-white text-xl">add</span>
+              <div className="flex items-center justify-center h-10 w-10 bg-primary rounded-xl shadow-lg hover:bg-orange-600 active:scale-95 transition-all">
+                <span className="material-symbols-outlined text-white text-2xl">add</span>
               </div>
             </button>
           </label>
         </div>
 
-        <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+        <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
           {filters.map(filter => (
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full px-5 transition-all backdrop-blur-md border border-white/10 ${activeFilter === filter
-                ? 'bg-primary text-white shadow-lg'
-                : 'bg-white/5 text-gray-300 hover:bg-white/10'
+              className={`flex h-11 shrink-0 items-center justify-center gap-x-2 rounded-2xl px-6 transition-all backdrop-blur-md border border-white/10 ${activeFilter === filter
+                ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
                 }`}
             >
-              <p className="text-sm font-medium leading-normal">{filter}</p>
+              <p className="text-sm font-bold leading-normal tracking-wide">{filter}</p>
             </button>
           ))}
         </div>
       </div>
 
-      <main className="flex-grow px-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 pb-24 max-w-[1400px] mx-auto w-full">
+      <main className="flex-grow px-4 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 pb-24 max-w-[1400px] mx-auto w-full">
         {filteredProducts.map(product => (
           <div
             key={product.id}
             onClick={() => navigate(`/products/edit/${product.id}`)}
-            className="glass-card rounded-[2rem] overflow-hidden transition-all active:scale-[0.98] cursor-pointer hover:bg-white/5 group border border-white/5"
+            className="glass-card rounded-[2.5rem] overflow-hidden transition-all duration-300 hover:translate-y-[-4px] active:scale-[0.98] cursor-pointer hover:bg-white/5 group border border-white/5 flex flex-col shadow-xl hover:shadow-primary/10"
           >
-            <div className="relative aspect-square w-full overflow-hidden">
+            <div className="relative aspect-[4/5] w-full overflow-hidden">
               <div
-                className="h-full w-full bg-cover bg-center bg-no-repeat transition-transform duration-500 group-hover:scale-110"
+                className="h-full w-full bg-cover bg-center bg-no-repeat transition-transform duration-700 group-hover:scale-110"
                 style={{ backgroundImage: `url("${product.image_url}")` }}
               ></div>
-              <div className="absolute top-3 right-3">
-                <div className="glass px-2 py-1 rounded-lg text-[10px] font-black text-white uppercase tracking-widest border border-white/10">
+              <div className="absolute top-4 right-4">
+                <div className="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-xl text-[10px] font-black text-white uppercase tracking-widest border border-white/10 shadow-lg">
                   {product.category}
                 </div>
               </div>
             </div>
 
-            <div className="p-4 flex flex-col gap-2">
-              <div className="flex flex-col gap-0.5">
-                <p className="text-white text-sm font-bold leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+            <div className="p-6 flex flex-col flex-1">
+              <div className="flex-1">
+                <p className="text-white text-base font-bold leading-tight line-clamp-2 group-hover:text-primary transition-colors mb-1.5">
                   {product.name}
                 </p>
                 <p className={`text-[10px] font-black uppercase tracking-widest ${product.stock <= 5 ? 'text-negative' : 'text-gray-500'}`}>
-                  Estoque: {product.stock} un
+                  ESTOQUE: {product.stock} UN
                 </p>
               </div>
 
-              <div className="flex items-center justify-between mt-1">
-                <p className="text-primary font-black text-base">
+              <div className="flex items-center justify-between mt-6">
+                <p className="text-primary font-black text-2xl tracking-tighter">
                   R$ {product.price.toFixed(2).replace('.', ',')}
                 </p>
-                <span className="material-symbols-outlined text-gray-600 text-sm group-hover:text-white transition-colors">edit</span>
+                <span className="material-symbols-outlined text-gray-600 text-xl group-hover:text-white transition-colors">edit</span>
               </div>
             </div>
           </div>
