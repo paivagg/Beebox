@@ -75,17 +75,17 @@ const App: React.FC = () => {
               <Route path="players" element={<Players />} />
               <Route path="products" element={<Products />} />
               <Route path="events" element={<Events />} />
+              <Route path="player/:id" element={<PlayerProfile />} />
+              <Route path="products/add" element={<AddProduct />} />
+              <Route path="products/edit/:id" element={<AddProduct />} />
+              <Route path="events/:id" element={<EventDetails />} />
+              <Route path="pos" element={<POS />} />
+              <Route path="analytics" element={<Analytics />} />
+              <Route path="sales-history" element={<SalesHistory />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="store-data" element={<StoreData />} />
+              <Route path="settings" element={<Settings />} />
             </Route>
-            <Route path="/player/:id" element={<PlayerProfile />} />
-            <Route path="/products/add" element={<AddProduct />} />
-            <Route path="/products/edit/:id" element={<AddProduct />} />
-            <Route path="/events/:id" element={<EventDetails />} />
-            <Route path="/pos" element={<POS />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/sales-history" element={<SalesHistory />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/store-data" element={<StoreData />} />
-            <Route path="/settings" element={<Settings />} />
           </Routes>
         </HashRouter>
       </StoreProvider>

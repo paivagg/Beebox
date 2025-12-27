@@ -52,11 +52,12 @@ const EventDetails: React.FC = () => {
 
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
-      <header className="sticky top-0 z-20 flex items-center p-4 pb-2 pt-8 justify-between">
-        <button onClick={() => navigate(-1)} className="glass flex size-10 shrink-0 items-center justify-center rounded-full text-white hover:bg-white/10 transition-colors">
+      <header className="sticky top-0 z-20 flex items-center p-4 pb-2 pt-8 justify-between md:static">
+        <button onClick={() => navigate(-1)} className="glass flex size-10 shrink-0 items-center justify-center rounded-full text-white hover:bg-white/10 transition-colors md:hidden">
           <span className="material-symbols-outlined text-xl">arrow_back_ios_new</span>
         </button>
-        <h1 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center drop-shadow-md">Detalhes do Evento</h1>
+        <h1 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center drop-shadow-md md:text-left md:text-3xl md:flex-none">Detalhes do Evento</h1>
+        <div className="flex-1 md:hidden"></div>
         <button
           onClick={handleDelete}
           className="glass flex size-10 shrink-0 items-center justify-center rounded-full text-negative hover:text-red-400"
@@ -101,7 +102,7 @@ const EventDetails: React.FC = () => {
         </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
           <div className="glass-card p-4 rounded-2xl">
             <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">Participantes</p>
             <p className="text-3xl font-bold text-white mt-1">{event.participants.length}</p>
@@ -110,6 +111,16 @@ const EventDetails: React.FC = () => {
             <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">Valor Pago</p>
             <p className="text-3xl font-bold text-positive mt-1">R$ {paidRevenue.toFixed(0)}</p>
             <p className="text-xs text-gray-500 mt-1">Potencial: R$ {totalRevenue.toFixed(0)}</p>
+          </div>
+          <div className="glass-card p-4 rounded-2xl hidden lg:block">
+            <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">Status</p>
+            <p className={`text-xl font-bold mt-1 ${event.status === 'finalized' ? 'text-positive' : 'text-primary'}`}>
+              {event.status === 'finalized' ? 'Finalizado' : 'Agendado'}
+            </p>
+          </div>
+          <div className="glass-card p-4 rounded-2xl hidden lg:block">
+            <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">Preço</p>
+            <p className="text-xl font-bold text-white mt-1">R$ {event.price.toFixed(2)}</p>
           </div>
         </div>
 
@@ -126,7 +137,7 @@ const EventDetails: React.FC = () => {
         </div>
 
         {/* Participants List */}
-        <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {event.participants.length > 0 ? (
             event.participants.map(p => (
               <div key={p.player_id} className="flex items-center justify-between p-3 glass-card rounded-2xl">

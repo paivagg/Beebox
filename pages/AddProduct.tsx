@@ -73,117 +73,129 @@ const AddProduct: React.FC = () => {
   };
 
   return (
-    <div className="flex justify-center min-h-screen w-full">
-      <div className="relative flex w-full max-w-[480px] flex-col overflow-x-hidden font-sans text-white">
-        <header className="sticky top-0 z-20 p-4 pt-8">
+    <div className="flex flex-col min-h-screen w-full overflow-x-hidden">
+      <div className="relative flex w-full flex-col font-sans text-white">
+        <header className="sticky top-0 z-20 p-4 pt-8 md:static md:p-0 md:mb-8">
           <div className="flex items-center justify-between">
-            <button onClick={() => navigate(-1)} className="glass flex h-10 w-10 items-center justify-center rounded-full text-white hover:bg-white/10 transition-colors">
+            <button onClick={() => navigate(-1)} className="glass flex h-10 w-10 items-center justify-center rounded-full text-white hover:bg-white/10 transition-colors md:hidden">
               <span className="material-symbols-outlined text-lg">arrow_back_ios_new</span>
             </button>
-            <h1 className="text-lg font-bold drop-shadow-md">{id ? 'Editar Produto' : 'Adicionar Produto'}</h1>
-            <div className="w-10"></div>
+            <h1 className="text-lg font-bold drop-shadow-md md:text-3xl md:text-left">{id ? 'Editar Produto' : 'Adicionar Produto'}</h1>
+            <div className="w-10 md:hidden"></div>
           </div>
         </header>
 
-        <main className="flex-1 px-4 pb-32">
-          <div className="space-y-6">
-            {/* Photo Upload */}
-            <div className="flex flex-col items-center justify-center space-y-3 py-6">
-              <div className="flex h-32 w-32 items-center justify-center rounded-3xl glass-card border border-dashed border-white/20">
-                <span className="material-symbols-outlined text-5xl text-gray-400">photo_camera</span>
+        <main className="flex-1 pb-32">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-4">
+            <div className="space-y-6">
+              {/* Photo Upload */}
+              <div className="flex flex-col items-center justify-center space-y-3 py-12 glass-card rounded-3xl border-2 border-dashed border-white/10 hover:border-primary/50 transition-colors cursor-pointer group">
+                <div className="flex h-32 w-32 items-center justify-center rounded-full bg-white/5 group-hover:bg-primary/10 transition-colors">
+                  <span className="material-symbols-outlined text-5xl text-gray-400 group-hover:text-primary">photo_camera</span>
+                </div>
+                <p className="text-sm text-gray-400 group-hover:text-primary">Adicionar Foto do Produto</p>
+              </div>
+
+              {/* Details Form */}
+              <div className="space-y-px overflow-hidden rounded-2xl glass-card">
+                <div className="flex items-center p-6">
+                  <label className="w-1/3 text-sm font-bold text-gray-400 uppercase tracking-wider" htmlFor="product-name">Nome</label>
+                  <input
+                    id="product-name"
+                    className="glass-input w-2/3 rounded-xl px-4 py-3 text-right text-base text-white placeholder:text-gray-600 focus:outline-none focus:ring-0 font-bold"
+                    type="text"
+                    placeholder="Ex: Charizard"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                  />
+                </div>
+                <div className="flex items-center p-6 border-t border-white/5">
+                  <label className="w-1/3 text-sm font-bold text-gray-400 uppercase tracking-wider" htmlFor="product-collection">Coleção</label>
+                  <input
+                    id="product-collection"
+                    className="glass-input w-2/3 rounded-xl px-4 py-3 text-right text-base text-white placeholder:text-gray-600 focus:outline-none focus:ring-0 font-bold"
+                    type="text"
+                    placeholder="Ex: Obsidian Flames"
+                    value={collection}
+                    onChange={e => setCollection(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Details Form */}
-            <div className="space-y-px overflow-hidden rounded-2xl glass-card">
-              <div className="flex items-center p-4">
-                <label className="w-1/3 text-sm font-medium text-gray-400" htmlFor="product-name">Nome</label>
-                <input
-                  id="product-name"
-                  className="glass-input w-2/3 rounded-xl px-3 py-2 text-right text-base text-white placeholder:text-gray-600 focus:outline-none focus:ring-0 font-medium"
-                  type="text"
-                  placeholder="Ex: Charizard"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                />
-              </div>
-              <div className="flex items-center p-4 border-t border-white/5">
-                <label className="w-1/3 text-sm font-medium text-gray-400" htmlFor="product-collection">Coleção</label>
-                <input
-                  id="product-collection"
-                  className="glass-input w-2/3 rounded-xl px-3 py-2 text-right text-base text-white placeholder:text-gray-600 focus:outline-none focus:ring-0 font-medium"
-                  type="text"
-                  placeholder="Ex: Obsidian Flames"
-                  value={collection}
-                  onChange={e => setCollection(e.target.value)}
-                />
-              </div>
-            </div>
-
-
-            {/* Tags / Category */}
-            <div>
-              <div className="flex justify-between items-center mb-3 ml-1">
-                <p className="text-sm font-medium text-gray-400">Tag / Categoria</p>
-                <button
-                  onClick={() => setIsCategoryModalOpen(true)}
-                  className="text-xs font-bold text-primary flex items-center gap-1 hover:text-orange-400 transition-colors"
-                >
-                  <span className="material-symbols-outlined text-sm">add_circle</span>
-                  Nova Categoria
-                </button>
-              </div>
-              <div className="flex gap-2 flex-wrap">
-                {customCategories.map(cat => (
+            <div className="space-y-6">
+              {/* Tags / Category */}
+              <div className="glass-card p-6 rounded-3xl">
+                <div className="flex justify-between items-center mb-4">
+                  <p className="text-sm font-bold text-gray-400 uppercase tracking-wider">Tag / Categoria</p>
                   <button
-                    key={cat}
-                    onClick={() => setCategory(cat)}
-                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${category === cat
-                      ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                      : 'glass text-gray-400 hover:text-white hover:bg-white/10'
-                      }`}
+                    onClick={() => setIsCategoryModalOpen(true)}
+                    className="text-xs font-bold text-primary flex items-center gap-1 hover:text-orange-400 transition-colors"
                   >
-                    {cat}
+                    <span className="material-symbols-outlined text-sm">add_circle</span>
+                    Nova Categoria
                   </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Pricing Form */}
-            <div className="space-y-px overflow-hidden rounded-2xl glass-card">
-              <div className="flex items-center p-4">
-                <p className="flex-1 text-sm font-medium text-gray-400">Preço de Custo</p>
-                <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center text-sm text-gray-500">R$</span>
-                  <input
-                    className="glass-input w-32 rounded-xl px-3 py-2 pl-8 text-right text-base text-white placeholder:text-gray-600 focus:outline-none focus:ring-0 font-medium"
-                    type="number"
-                    placeholder="0,00"
-                    value={cost}
-                    onChange={e => setCost(e.target.value)}
-                  />
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  {customCategories.map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => setCategory(cat)}
+                      className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${category === cat
+                        ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                        : 'glass text-gray-400 hover:text-white hover:bg-white/10'
+                        }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
                 </div>
               </div>
-              <div className="flex items-center p-4 border-t border-white/5">
-                <p className="flex-1 text-sm font-medium text-gray-400">Preço de Venda</p>
-                <div className="relative">
-                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center text-sm text-gray-500">R$</span>
-                  <input
-                    className="glass-input w-32 rounded-xl px-3 py-2 pl-8 text-right text-base text-white placeholder:text-gray-600 focus:outline-none focus:ring-0 font-medium"
-                    type="number"
-                    placeholder="0,00"
-                    value={price}
-                    onChange={e => setPrice(e.target.value)}
-                  />
+
+              {/* Pricing Form */}
+              <div className="space-y-px overflow-hidden rounded-2xl glass-card">
+                <div className="flex items-center p-6">
+                  <p className="flex-1 text-sm font-bold text-gray-400 uppercase tracking-wider">Preço de Custo</p>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center text-sm text-gray-500">R$</span>
+                    <input
+                      className="glass-input w-40 rounded-xl px-4 py-3 pl-10 text-right text-lg text-white placeholder:text-gray-600 focus:outline-none focus:ring-0 font-bold"
+                      type="number"
+                      placeholder="0,00"
+                      value={cost}
+                      onChange={e => setCost(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center p-6 border-t border-white/5">
+                  <p className="flex-1 text-sm font-bold text-gray-400 uppercase tracking-wider">Preço de Venda</p>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center text-sm text-gray-500">R$</span>
+                    <input
+                      className="glass-input w-40 rounded-xl px-4 py-3 pl-10 text-right text-lg text-white placeholder:text-gray-600 focus:outline-none focus:ring-0 font-bold"
+                      type="number"
+                      placeholder="0,00"
+                      value={price}
+                      onChange={e => setPrice(e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
 
+              {/* Desktop Save Button */}
+              <button
+                onClick={handleSave}
+                className="hidden md:flex w-full py-5 rounded-2xl bg-primary text-white font-bold text-xl shadow-lg shadow-primary/30 active:scale-[0.98] transition-all hover:bg-orange-600 items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined">save</span>
+                {id ? 'Atualizar Produto' : 'Salvar Produto'}
+              </button>
+            </div>
           </div>
         </main>
 
-        {/* Bottom Save Button */}
-        <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] p-6 bg-gradient-to-t from-black via-black/80 to-transparent z-30">
+        {/* Mobile Save Button */}
+        <div className="fixed bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black via-black/80 to-transparent z-30 md:hidden">
           <button
             onClick={handleSave}
             className="w-full py-4 rounded-2xl bg-primary text-white font-bold text-lg shadow-lg shadow-primary/30 active:scale-[0.98] transition-all hover:bg-orange-600"
