@@ -111,7 +111,7 @@ const Players: React.FC = () => {
           {/* Add Button inside Search Bar */}
           <button
             onClick={() => setIsModalOpen(true)}
-            className="absolute inset-y-0 right-0 flex items-center pr-1 z-10"
+            className="absolute inset-y-0 right-0 flex items-center pr-2 z-10"
           >
             <div className="flex items-center justify-center h-10 w-10 bg-primary rounded-2xl shadow-lg hover:bg-orange-600 active:scale-95 transition-all">
               <span className="material-symbols-outlined text-white text-2xl">add</span>

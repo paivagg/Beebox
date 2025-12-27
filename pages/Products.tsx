@@ -92,40 +92,40 @@ const Products: React.FC = () => {
         </div>
       </div>
 
-      <main className="flex-grow px-4 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 pb-24 max-w-[1400px] mx-auto w-full">
+      <main className="flex-grow px-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 pb-24 max-w-[1400px] mx-auto w-full">
         {filteredProducts.map(product => (
           <div
             key={product.id}
             onClick={() => navigate(`/products/edit/${product.id}`)}
-            className="glass-card rounded-[2.5rem] overflow-hidden transition-all duration-300 hover:translate-y-[-4px] active:scale-[0.98] cursor-pointer hover:bg-white/5 group border border-white/5 flex flex-col shadow-xl hover:shadow-primary/10"
+            className="glass-card rounded-[2rem] overflow-hidden transition-all duration-300 hover:translate-y-[-4px] active:scale-[0.98] cursor-pointer hover:bg-white/5 group border border-white/5 flex flex-col shadow-lg hover:shadow-primary/5"
           >
             <div className="relative aspect-[4/5] w-full overflow-hidden">
               <div
                 className="h-full w-full bg-cover bg-center bg-no-repeat transition-transform duration-700 group-hover:scale-110"
                 style={{ backgroundImage: `url("${product.image_url}")` }}
               ></div>
-              <div className="absolute top-4 right-4">
-                <div className="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-xl text-[10px] font-black text-white uppercase tracking-widest border border-white/10 shadow-lg">
+              <div className="absolute top-3 right-3">
+                <div className="bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg text-[9px] font-black text-white uppercase tracking-widest border border-white/10 shadow-lg">
                   {product.category}
                 </div>
               </div>
             </div>
 
-            <div className="p-6 flex flex-col flex-1">
+            <div className="p-4 flex flex-col flex-1">
               <div className="flex-1">
-                <p className="text-white text-base font-bold leading-tight line-clamp-2 group-hover:text-primary transition-colors mb-1.5">
+                <p className="text-white text-sm font-bold leading-tight line-clamp-2 group-hover:text-primary transition-colors mb-1">
                   {product.name}
                 </p>
-                <p className={`text-[10px] font-black uppercase tracking-widest ${product.stock <= 5 ? 'text-negative' : 'text-gray-500'}`}>
+                <p className={`text-[9px] font-black uppercase tracking-widest ${product.stock <= 5 ? 'text-negative' : 'text-gray-500'}`}>
                   ESTOQUE: {product.stock} UN
                 </p>
               </div>
 
-              <div className="flex items-center justify-between mt-6">
-                <p className="text-primary font-black text-2xl tracking-tighter">
+              <div className="flex items-center justify-between mt-4">
+                <p className="text-primary font-black text-xl tracking-tighter">
                   R$ {product.price.toFixed(2).replace('.', ',')}
                 </p>
-                <span className="material-symbols-outlined text-gray-600 text-xl group-hover:text-white transition-colors">edit</span>
+                <span className="material-symbols-outlined text-gray-600 text-lg group-hover:text-white transition-colors">edit</span>
               </div>
             </div>
           </div>
