@@ -70,7 +70,8 @@ export class RxDBStorageService implements IStorageService {
             players: {
                 schema: playerSchema,
                 migrationStrategies: {
-                    1: (oldDoc) => oldDoc
+                    1: (oldDoc) => oldDoc,
+                    2: (oldDoc) => oldDoc
                 }
             },
             products: {

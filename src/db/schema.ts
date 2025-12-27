@@ -8,7 +8,7 @@ import { Player, Product, Event, Transaction, StoreProfile, StoreSettings } from
 export const playerSchemaLiteral = {
     title: 'player schema',
     description: 'describes a player',
-    version: 1,
+    version: 2,
     primaryKey: 'id',
     type: 'object',
     properties: {
@@ -35,6 +35,9 @@ export const playerSchemaLiteral = {
             type: 'string'
         },
         last_activity: {
+            type: 'string'
+        },
+        credit_updated_at: {
             type: 'string'
         },
         updated_at: {
