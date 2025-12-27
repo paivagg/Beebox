@@ -59,7 +59,7 @@ const SalesHistory: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {filteredSales.map(sale => (
             <div key={sale.id} className="glass-card flex items-center justify-between rounded-2xl p-4 transition-transform hover:scale-[1.01]">
               <div className="flex items-center gap-4">

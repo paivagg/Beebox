@@ -40,12 +40,14 @@ const RequireAuth = ({ children }: { children: React.ReactElement }) => {
   return children;
 };
 
+import Sidebar from './components/Sidebar';
+
 const Layout = () => {
   return (
-    // Max-width constrain for desktop to look like mobile app
-    <div className="flex justify-center min-h-screen w-full">
-      <div className="relative flex flex-col w-full max-w-[480px] min-h-screen text-white font-display overflow-x-hidden shadow-2xl">
-        <div className="flex-grow pb-28">
+    <div className="flex min-h-screen w-full bg-[#121212]">
+      <Sidebar />
+      <div className="relative flex flex-col flex-1 min-h-screen text-white font-display overflow-x-hidden">
+        <div className="flex-grow pb-28 md:pb-8 max-w-7xl mx-auto w-full">
           <Outlet />
         </div>
         <BottomNav />

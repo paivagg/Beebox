@@ -26,7 +26,7 @@ const BottomNav: React.FC = () => {
       {/* Gradient Fade for Separation */}
       <div className="fixed bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#121212] via-[#121212]/90 to-transparent pointer-events-none z-30" />
 
-      <nav className="fixed bottom-6 left-1/2 z-40 w-full max-w-[380px] -translate-x-1/2 transform px-4">
+      <nav className="fixed bottom-6 left-1/2 z-40 w-full max-w-[380px] -translate-x-1/2 transform px-4 md:hidden">
         <div className="glass-nav flex items-center justify-around rounded-full px-4 py-2">
           {leftNavItems.concat(rightNavItems).map((item) => (
             <NavLink

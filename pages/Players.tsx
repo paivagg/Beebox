@@ -52,8 +52,7 @@ const Players: React.FC = () => {
 
   const filteredPlayers = players.filter(player =>
     player.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    player.id.includes(searchTerm) ||
-    player.nickname.toLowerCase().includes(searchTerm.toLowerCase())
+    player.id.includes(searchTerm)
   ).sort((a, b) => {
     const dateA = a.last_activity ? new Date(a.last_activity).getTime() : 0;
     const dateB = b.last_activity ? new Date(b.last_activity).getTime() : 0;
@@ -121,7 +120,7 @@ const Players: React.FC = () => {
         </label>
       </div>
 
-      <div className="flex flex-col gap-3 px-4 pb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 px-4 pb-4">
         {filteredPlayers.map(player => {
           const { credit, eventDebt } = getPlayerBalances(player.id);
           return (

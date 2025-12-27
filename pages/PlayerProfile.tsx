@@ -20,8 +20,7 @@ const PlayerProfile: React.FC = () => {
 
   // Edit Profile State
   const [editName, setEditName] = useState('');
-  const [editNickname, setEditNickname] = useState('');
-  const [editDci, setEditDci] = useState('');
+  const [editEmail, setEditEmail] = useState('');
 
   const player = players.find(p => p.id === id);
   const playerTransactions = transactions
@@ -83,8 +82,7 @@ const PlayerProfile: React.FC = () => {
     const updatedPlayer: Player = {
       ...player,
       name: editName,
-      nickname: editNickname,
-      dci: editDci
+      email: editEmail
     };
 
     updatePlayer(updatedPlayer);
@@ -107,8 +105,7 @@ const PlayerProfile: React.FC = () => {
 
   const openEditModal = () => {
     setEditName(player.name);
-    setEditNickname(player.nickname);
-    setEditDci(player.dci || '');
+    setEditEmail(player.email || '');
     setIsEditModalOpen(true);
   };
 
@@ -146,15 +143,15 @@ const PlayerProfile: React.FC = () => {
 
       <main className="flex-1 px-4 pb-32">
         {/* Header/Avatar Section Grouped */}
-        <section className="flex w-full flex-col items-center pt-4">
-          <div className="glass-card w-full rounded-3xl p-6 flex flex-col items-center gap-4 border border-white/10 shadow-xl">
+        <section className="flex w-full flex-col lg:flex-row gap-6 pt-4">
+          <div className="glass-card flex-1 rounded-3xl p-6 flex flex-col items-center gap-4 border border-white/10 shadow-xl">
             <div
               className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-24 w-24 border-4 border-white/10 shadow-lg"
               style={{ backgroundImage: `url("${player.avatar_url}")` }}
             ></div>
             <div className="flex flex-col items-center justify-center">
               <p className="text-white text-2xl font-bold leading-tight tracking-tight text-center">{player.name}</p>
-              <p className="text-gray-400 text-sm font-medium text-center mt-1">DCI: {player.dci || 'N/A'}</p>
+              {player.email && <p className="text-gray-400 text-sm font-medium text-center mt-1">{player.email}</p>}
             </div>
 
             <div className="w-full h-px bg-white/5 my-2"></div>
@@ -188,6 +185,27 @@ const PlayerProfile: React.FC = () => {
               )}
             </div>
           </div>
+
+          {/* Desktop Actions Card */}
+          <div className="hidden lg:flex flex-col gap-4 w-64">
+            <div className="glass-card rounded-3xl p-6 flex flex-col gap-4 border border-white/10 shadow-xl">
+              <h3 className="text-white font-bold text-sm uppercase tracking-wider">Ações</h3>
+              <button
+                onClick={() => openTransactionModal('credit')}
+                className="flex items-center gap-3 w-full rounded-2xl py-3 px-4 bg-positive text-white active:scale-95 transition-all shadow-lg shadow-green-900/20"
+              >
+                <span className="material-symbols-outlined text-xl filled">add_circle</span>
+                <span className="text-sm font-bold uppercase">Adicionar</span>
+              </button>
+              <button
+                onClick={() => openTransactionModal('debit')}
+                className="flex items-center gap-3 w-full rounded-2xl py-3 px-4 bg-negative text-white active:scale-95 transition-all shadow-lg shadow-red-900/20"
+              >
+                <span className="material-symbols-outlined text-xl">remove_circle</span>
+                <span className="text-sm font-bold uppercase">Gasto</span>
+              </button>
+            </div>
+          </div>
         </section>
 
         {/* History */}
@@ -196,7 +214,7 @@ const PlayerProfile: React.FC = () => {
             <h2 className="text-white text-xl font-bold leading-tight tracking-[-0.015em] drop-shadow-md">Histórico</h2>
             <button className="text-primary text-sm font-bold hover:underline">Ver tudo</button>
           </div>
-          <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {playerTransactions.length > 0 ? playerTransactions.map(tx => (
               <div key={tx.id} className={`glass-card flex items-center justify-between rounded-2xl p-4 transition-transform hover:scale-[1.01] ${tx.isExpired ? 'opacity-40 grayscale' : ''}`}>
                 <div className="flex items-center gap-4">
@@ -245,7 +263,7 @@ const PlayerProfile: React.FC = () => {
       </main>
 
       {/* Action Bar */}
-      <nav className="fixed bottom-6 left-4 right-4 z-30 flex justify-center">
+      <nav className="fixed bottom-6 left-4 right-4 z-30 flex justify-center lg:hidden">
         <div className="flex w-full max-w-sm justify-around items-center rounded-3xl glass-nav p-2 gap-3">
           <button
             onClick={() => openTransactionModal('credit')}
@@ -368,20 +386,13 @@ const PlayerProfile: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-sm text-gray-400 block mb-2 pl-1">Apelido (Nickname)</label>
+                <label className="text-sm text-gray-400 block mb-2 pl-1">Email</label>
                 <input
                   className="glass-input w-full rounded-2xl p-4 text-white placeholder:text-gray-600"
-                  value={editNickname}
-                  onChange={(e) => setEditNickname(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="text-sm text-gray-400 block mb-2 pl-1">DCI / ID</label>
-                <input
-                  className="glass-input w-full rounded-2xl p-4 text-white placeholder:text-gray-600"
-                  value={editDci}
-                  onChange={(e) => setEditDci(e.target.value)}
+                  placeholder="email@exemplo.com"
+                  type="email"
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
                 />
               </div>
 

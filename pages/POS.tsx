@@ -280,7 +280,7 @@ const POS: React.FC = () => {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
             />
-            <div className="flex flex-col gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
               {filteredPlayers.map(player => (
                 <div
                   key={player.id}
@@ -319,7 +319,7 @@ const POS: React.FC = () => {
                 <span className="font-bold">Gasto Avulso</span>
               </button>
 
-              <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {filteredProducts.map(product => (
                   <div key={product.id} className="glass-card flex justify-between items-center p-3 rounded-2xl">
                     <div className="flex items-center gap-3">
@@ -397,7 +397,7 @@ const POS: React.FC = () => {
 
       {/* Footer / Cart Summary */}
       {(step === 'select-products' || step === 'review') && cart.length > 0 && (
-        <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] glass border-t border-white/10 p-5 pb-8 z-30 rounded-t-3xl backdrop-blur-xl">
+        <div className="fixed bottom-0 left-0 right-0 md:left-auto md:right-8 md:bottom-8 w-full md:w-96 glass border-t md:border border-white/10 p-5 pb-8 md:pb-5 z-30 rounded-t-3xl md:rounded-3xl backdrop-blur-xl shadow-2xl">
           <div className="flex justify-between items-center mb-4 px-2">
             <p className="text-gray-300 font-medium">{cart.reduce((a, b) => a + b.quantity, 0)} itens</p>
             <p className="text-2xl font-bold text-primary drop-shadow-sm">R$ {total.toFixed(2)}</p>

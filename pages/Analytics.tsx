@@ -60,7 +60,7 @@ export const Analytics: React.FC = () => {
 
             <div className="flex flex-col gap-4 px-4 pb-4">
                 {/* KPI Grid */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                     <KPICard
                         title="Vendas"
                         value={`R$ ${analytics.totalSales.toFixed(2)}`}
@@ -100,8 +100,10 @@ export const Analytics: React.FC = () => {
                 </div>
 
                 {/* Charts */}
-                <SalesChart data={analytics.salesByDay} />
-                <CategoryDistribution data={analytics.categoryDistribution} />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <SalesChart data={analytics.salesByDay} />
+                    <CategoryDistribution data={analytics.categoryDistribution} />
+                </div>
 
                 {/* Top Players */}
                 <div className="glass-card rounded-2xl p-4 border border-white/5">
@@ -110,7 +112,7 @@ export const Analytics: React.FC = () => {
                         Top Players
                     </h3>
 
-                    <div className="flex flex-col gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
                         {Object.entries(
                             transactions.reduce((acc, t) => {
                                 if (t.player_id && t.type === 'debit') {

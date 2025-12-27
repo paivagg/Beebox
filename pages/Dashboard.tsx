@@ -65,11 +65,11 @@ const Dashboard: React.FC = () => {
   return (
     <div className="relative flex flex-col w-full">
       {/* Header */}
-      <header className="flex items-center p-6 pb-2 pt-8 sticky top-0 z-10">
+      <header className="flex items-center p-6 pb-2 pt-8 sticky top-0 z-10 md:static">
         <div className="flex-1">
           <h1 className="text-white text-3xl font-bold leading-tight tracking-[-0.015em] drop-shadow-lg">Dashboard</h1>
         </div>
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-end md:hidden">
           <button
             onClick={() => navigate('/profile')}
             className="glass flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 text-white hover:bg-white/10 transition-colors"
@@ -81,7 +81,7 @@ const Dashboard: React.FC = () => {
 
       <main className="flex-grow px-4">
         {/* Metrics */}
-        <section className="grid grid-cols-2 gap-4 pt-6">
+        <section className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-6">
           <div className="glass-card flex flex-col gap-2 rounded-2xl p-5">
             <p className="text-text-secondary-dark text-sm font-medium leading-normal uppercase tracking-wider">Inscrições do Mês</p>
             <p className="text-white tracking-light text-2xl font-bold leading-tight">
@@ -102,7 +102,7 @@ const Dashboard: React.FC = () => {
 
         {/* Quick Actions */}
         <h2 className="text-white text-xl font-bold leading-tight tracking-[-0.015em] pt-8 pb-4 pl-1 drop-shadow-md">Ações Rápidas</h2>
-        <section className="grid grid-cols-2 gap-3">
+        <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           <div
             onClick={() => navigate('/pos')}
             className="glass-card flex cursor-pointer items-center gap-3 rounded-2xl p-4 hover:bg-white/5 transition-all active:scale-95"
@@ -155,7 +155,7 @@ const Dashboard: React.FC = () => {
           <h2 className="text-white text-xl font-bold leading-tight tracking-[-0.015em] drop-shadow-md">Top Players</h2>
           <button className="text-primary text-sm font-bold hover:underline" onClick={() => navigate('/players')}>Ver todos</button>
         </div>
-        <section className="flex flex-col gap-3">
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {topPlayers.length > 0 ? topPlayers.map(player => (
             <div key={player.id} className="glass-card flex items-center gap-4 rounded-2xl p-4 transition-colors hover:bg-white/5 cursor-pointer" onClick={() => navigate(`/player/${player.id}`)}>
               <div
@@ -173,7 +173,7 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
           )) : (
-            <div className="text-center text-gray-400 py-6 glass-card rounded-2xl">
+            <div className="text-center text-gray-400 py-6 glass-card rounded-2xl md:col-span-2">
               Nenhuma movimentação registrada.
             </div>
           )}
