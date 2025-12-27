@@ -8,7 +8,7 @@ import { CategoryDistribution } from '../components/analytics/CategoryDistributi
 
 export const Analytics: React.FC = () => {
     const navigate = useNavigate();
-    const { transactions, players, events } = useStore();
+    const { transactions, players, events, resetAnalytics } = useStore();
     const [period, setPeriod] = useState<Period>('month');
 
     const analytics = useAnalytics(transactions, players, events, period);
@@ -31,7 +31,14 @@ export const Analytics: React.FC = () => {
                     >
                         <span className="material-symbols-outlined">arrow_back</span>
                     </button>
-                    <h1 className="text-3xl font-bold tracking-tighter text-white drop-shadow-md">Analytics</h1>
+                    <h1 className="text-3xl font-bold tracking-tighter text-white drop-shadow-md flex-1">Analytics</h1>
+                    <button
+                        onClick={resetAnalytics}
+                        className="glass flex items-center justify-center rounded-full h-10 w-10 text-white hover:bg-red-500/20 transition-colors"
+                        title="Reset Analytics"
+                    >
+                        <span className="material-symbols-outlined">restart_alt</span>
+                    </button>
                 </div>
 
                 {/* Period Selector */}
@@ -104,12 +111,27 @@ export const Analytics: React.FC = () => {
                     </h3>
 
                     <div className="flex flex-col gap-2">
-                        {players
-                            .sort((a, b) => {
-                                const aActivity = new Date(a.last_activity || 0).getTime();
-                                const bActivity = new Date(b.last_activity || 0).getTime();
-                                return bActivity - aActivity;
+                        {Object.entries(
+                            transactions.reduce((acc, t) => {
+                                if (t.player_id && t.type === 'debit') {
+                                    acc[t.player_id] = (acc[t.player_id] || 0) + t.amount;
+                                }
+                                return acc;
+                            }, {} as Record<string, number>)
+                        )
+                            .map(([playerId, volume]) => {
+                                const player = players.find(p => p.id === playerId);
+                                return {
+                                    ...player,
+                                    id: playerId,
+                                    name: player?.name || 'Jogador Desconhecido',
+                                    avatar_url: player?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(player?.name || 'U')}&background=random`,
+                                    volume,
+                                    balance: player?.balance || 0
+                                };
                             })
+                            .filter(p => p.name !== 'Jogador Desconhecido')
+                            .sort((a, b) => b.volume - a.volume)
                             .slice(0, 10)
                             .map((player, index) => (
                                 <div
@@ -126,10 +148,7 @@ export const Analytics: React.FC = () => {
                                     <div className="flex-1 min-w-0">
                                         <p className="text-white font-medium text-sm truncate">{player.name}</p>
                                         <p className="text-white/40 text-xs">
-                                            {player.last_activity
-                                                ? new Date(player.last_activity).toLocaleDateString('pt-BR')
-                                                : 'Sem atividade'
-                                            }
+                                            Volume: R$ {player.volume.toFixed(2)}
                                         </p>
                                     </div>
                                     <span className={`text-sm font-bold ${player.balance >= 0 ? 'text-positive' : 'text-negative'}`}>

@@ -183,28 +183,42 @@ export class RxDBStorageService implements IStorageService {
                 handler: async (docs: any[]) => {
                     try {
                         console.log(`[Push] Sending ${docs.length} docs for ${tableName}`);
-                        const { error } = await this.supabase
-                            .from(tableName)
-                            .upsert(docs.map(doc => {
-                                const { _rev, _attachments, _deleted, ...cleanDoc } = doc.newDocumentState;
-                                return { ...cleanDoc, updated_at: new Date().toISOString() };
-                            }));
-                        if (error) {
-                            console.error(`Push error for ${tableName}:`, error);
-                            // Add to sync queue for retry
-                            if (this.syncQueue) {
-                                for (const doc of docs) {
-                                    const { _rev, _attachments, _deleted, ...cleanDoc } = doc.newDocumentState;
-                                    await this.syncQueue.add('update', tableName as any, cleanDoc);
-                                }
+
+                        const toUpsert = docs.filter(doc => !doc.newDocumentState._deleted).map(doc => {
+                            const { _rev, _attachments, _deleted, ...cleanDoc } = doc.newDocumentState;
+                            return { ...cleanDoc, updated_at: new Date().toISOString() };
+                        });
+
+                        const toDelete = docs.filter(doc => doc.newDocumentState._deleted).map(doc => doc.newDocumentState.id);
+
+                        if (toUpsert.length > 0) {
+                            const { error } = await this.supabase.from(tableName).upsert(toUpsert);
+                            if (error) {
+                                console.error(`Push upsert error for ${tableName}:`, error);
+                                throw error;
                             }
-                            throw error;
                         }
+
+                        if (toDelete.length > 0) {
+                            const { error } = await this.supabase.from(tableName).delete().in('id', toDelete);
+                            if (error) {
+                                console.error(`Push delete error for ${tableName}:`, error);
+                                throw error;
+                            }
+                        }
+
                         console.log(`[Push] Successfully synced ${docs.length} docs for ${tableName}`);
                         return [];
                     } catch (error) {
                         console.error(`Push handler error for ${tableName}:`, error);
-                        throw error;
+                        // Add to sync queue for retry as fallback
+                        if (this.syncQueue) {
+                            for (const doc of docs) {
+                                const { _rev, _attachments, _deleted, ...cleanDoc } = doc.newDocumentState;
+                                await this.syncQueue.add(_deleted ? 'delete' : 'update', tableName as any, cleanDoc);
+                            }
+                        }
+                        return docs; // Return docs to RxDB for retry
                     }
                 },
                 batchSize: 5
@@ -286,7 +300,7 @@ export class RxDBStorageService implements IStorageService {
 
     async saveTransaction(transaction: Transaction): Promise<void> {
         const db = await this.dbPromise;
-        await db.transactions.insert(transaction);
+        await db.transactions.upsert(transaction);
     }
 
     async deleteTransaction(id: string): Promise<void> {

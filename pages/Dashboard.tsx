@@ -35,7 +35,7 @@ const Dashboard: React.FC = () => {
     const playerVolumes: Record<string, number> = {};
 
     transactions.forEach(t => {
-      if (t.player_id) {
+      if (t.player_id && t.type === 'debit') {
         playerVolumes[t.player_id] = (playerVolumes[t.player_id] || 0) + t.amount;
       }
     });
@@ -46,10 +46,11 @@ const Dashboard: React.FC = () => {
         return {
           id: playerId,
           name: player?.name || 'Jogador Desconhecido',
-          avatar_url: player?.avatar_url,
+          avatar_url: player?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(player?.name || 'U')}&background=random`,
           volume
         };
       })
+      .filter(p => p.name !== 'Jogador Desconhecido')
       .sort((a, b) => b.volume - a.volume)
       .slice(0, 5);
   }, [transactions, players]);

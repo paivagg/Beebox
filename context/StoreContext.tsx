@@ -160,6 +160,7 @@ interface StoreContextType {
   storeSettings: StoreSettings;
   updateStoreSettings: (settings: Partial<StoreSettings>) => void;
   resetStore: () => void;
+  resetAnalytics: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -307,8 +308,6 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     if (!validation.isValid) throw new Error(validation.errors.join(', '));
     const productWithTime = { ...product, updated_at: new Date().toISOString() };
     await storageService.saveProduct(productWithTime);
-
-    apiService.post('/products', productWithTime).catch(e => console.error('Cloud sync failed:', e));
   }, []);
 
   const updateProduct = useCallback(async (updatedProduct: Product) => {
@@ -316,8 +315,6 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     if (!validation.isValid) throw new Error(validation.errors.join(', '));
     const productWithTime = { ...updatedProduct, updated_at: new Date().toISOString() };
     await storageService.updateProduct(productWithTime);
-
-    apiService.put(`/products/${updatedProduct.id}`, productWithTime).catch(e => console.error('Cloud sync failed:', e));
   }, []);
 
   const addEvent = useCallback(async (event: Event) => {
@@ -325,8 +322,6 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     if (!validation.isValid) throw new Error(validation.errors.join(', '));
     const eventWithTime = { ...event, updated_at: new Date().toISOString() };
     await storageService.saveEvent(eventWithTime);
-
-    apiService.post('/events', eventWithTime).catch(e => console.error('Cloud sync failed:', e));
   }, []);
 
   const addPlayer = useCallback(async (name: string, email?: string) => {
@@ -344,15 +339,11 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       updated_at: new Date().toISOString()
     };
     await storageService.savePlayer(newPlayer);
-
-    apiService.post('/players', newPlayer).catch(e => console.error('Cloud sync failed:', e));
   }, []);
 
   const updatePlayer = useCallback(async (updatedPlayer: Player) => {
     const playerWithTime = { ...updatedPlayer, updated_at: new Date().toISOString() };
     await storageService.updatePlayer(playerWithTime);
-
-    apiService.put(`/players/${updatedPlayer.id}`, playerWithTime).catch(e => console.error('Cloud sync failed:', e));
   }, []);
 
   const addTransaction = useCallback(async (transaction: Transaction) => {
@@ -386,11 +377,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         }
 
         await storageService.updatePlayer(updatedPlayerData);
-        apiService.put(`/players/${player.id}`, updatedPlayerData).catch(e => console.error('Cloud sync failed:', e));
       }
-
-
-      apiService.post('/transactions', transaction).catch(e => console.error('Cloud sync failed:', e));
     } catch (error) {
       console.error('Error adding transaction:', error);
       throw error;
@@ -433,8 +420,6 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       };
 
       await storageService.updateEvent(updatedEvent);
-
-      apiService.put(`/events/${event.id}`, updatedEvent).catch(e => console.error('Cloud sync failed:', e));
     }
   }, [events]);
 
@@ -447,8 +432,6 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         participants: updatedParticipants
       };
       await storageService.updateEvent(updatedEvent);
-
-      apiService.put(`/events/${event.id}`, updatedEvent).catch(e => console.error('Cloud sync failed:', e));
     }
   }, [events]);
 
@@ -461,8 +444,6 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       });
       const updatedEvent = { ...event, participants: updatedParticipants };
       await storageService.updateEvent(updatedEvent);
-
-      apiService.put(`/events/${event.id}`, updatedEvent).catch(e => console.error('Cloud sync failed:', e));
     }
   }, [events]);
 
@@ -516,11 +497,6 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           )
         };
         await storageService.updateEvent(finalizedEvent as Event);
-      }
-
-      const eventToSync = events.find(e => e.id === eventId);
-      if (eventToSync) {
-        apiService.put(`/events/${eventId}`, eventToSync).catch(e => console.error('Cloud sync failed:', e));
       }
 
       return { processed: pendingParticipants.length, total: pendingParticipants.length * event.price };
@@ -605,6 +581,42 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
 
 
+  const resetAnalytics = useCallback(async () => {
+    if (window.confirm('Tem certeza que deseja resetar os dados de analytics? Isso apagará todas as transações e eventos, e resetará os saldos dos jogadores.')) {
+      try {
+        // Delete all transactions
+        const allTransactions = await storageService.getTransactions();
+        for (const t of allTransactions) {
+          await storageService.deleteTransaction(t.id);
+        }
+
+        // Delete all events
+        const allEvents = await storageService.getEvents();
+        for (const e of allEvents) {
+          await storageService.deleteEvent(e.id);
+        }
+
+        // Reset player balances
+        const allPlayers = await storageService.getPlayers();
+        for (const p of allPlayers) {
+          await storageService.updatePlayer({
+            ...p,
+            balance: 0,
+            credit_updated_at: undefined,
+            last_activity: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        }
+
+        console.log('Analytics data reset successfully');
+        alert('Analytics resetado com sucesso!');
+      } catch (error) {
+        console.error('Error resetting analytics:', error);
+        alert('Erro ao resetar analytics. Verifique o console.');
+      }
+    }
+  }, [players]);
+
   const resetStore = useCallback(async () => {
     if (window.confirm('Tem certeza que deseja apagar todos os dados? Esta ação não pode ser desfeita.')) {
       await storageService.clearAll();
@@ -650,6 +662,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     updateStoreProfile,
     updateStoreSettings,
     resetStore,
+    resetAnalytics,
     isLoading
   }), [
     players,
@@ -675,6 +688,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     updateStoreProfile,
     updateStoreSettings,
     resetStore,
+    resetAnalytics,
     isLoading
   ]);
 
