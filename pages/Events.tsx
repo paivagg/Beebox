@@ -106,12 +106,12 @@ const Events: React.FC = () => {
 
   return (
     <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
-      <div className="px-4 pt-8 pb-4 sticky top-0 z-20">
-        <div className="flex justify-between items-center mb-6 pl-1">
-          <h1 className="text-3xl font-bold tracking-tighter text-white drop-shadow-md">Eventos</h1>
+      <div className="px-4 pt-8 pb-4 sticky top-0 z-20 md:static md:px-0 md:mb-4">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center drop-shadow-md md:text-left md:text-3xl md:flex-none">Eventos</h1>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center justify-center h-10 w-10 bg-primary/80 backdrop-blur rounded-full shadow-lg hover:bg-primary transition-all"
+            className="flex items-center justify-center h-10 w-10 bg-primary/80 backdrop-blur rounded-full shadow-lg hover:bg-primary transition-all md:h-12 md:w-12"
           >
             <span className="material-symbols-outlined text-white">add</span>
           </button>

@@ -5,9 +5,10 @@ import { SalesDataPoint } from '../../hooks/useAnalytics';
 interface SalesChartProps {
     data: SalesDataPoint[];
     loading?: boolean;
+    hideHeader?: boolean;
 }
 
-export const SalesChart: React.FC<SalesChartProps> = ({ data, loading = false }) => {
+export const SalesChart: React.FC<SalesChartProps> = ({ data, loading = false, hideHeader = false }) => {
     if (loading) {
         return (
             <div className="glass-card rounded-2xl p-4 border border-white/5 h-64 animate-pulse">
@@ -34,11 +35,13 @@ export const SalesChart: React.FC<SalesChartProps> = ({ data, loading = false })
     };
 
     return (
-        <div className="glass-card rounded-2xl p-4 border border-white/5">
-            <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-xl">show_chart</span>
-                Vendas no Período
-            </h3>
+        <div className={hideHeader ? "" : "glass-card rounded-2xl p-4 border border-white/5"}>
+            {!hideHeader && (
+                <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary text-xl">show_chart</span>
+                    Vendas no Período
+                </h3>
+            )}
 
             <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={data}>

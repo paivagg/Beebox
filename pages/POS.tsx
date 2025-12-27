@@ -256,17 +256,20 @@ const POS: React.FC = () => {
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
       {/* Header */}
-      <header className="sticky top-0 z-20 p-4 pt-8 bg-transparent">
-        <div className="flex items-center justify-between rounded-full glass px-4 py-3">
-          <button onClick={() => step === 'select-player' ? navigate(-1) : setStep(prev => prev === 'review' ? 'select-products' : 'select-player')}>
-            <span className="material-symbols-outlined text-white">arrow_back_ios_new</span>
+      <header className="sticky top-0 z-20 p-4 pt-8 md:static md:px-0 md:mb-4">
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => step === 'select-player' ? navigate(-1) : setStep(prev => prev === 'review' ? 'select-products' : 'select-player')}
+            className="glass flex h-10 w-10 items-center justify-center rounded-full text-white hover:bg-white/10 transition-colors md:hidden"
+          >
+            <span className="material-symbols-outlined text-lg">arrow_back_ios_new</span>
           </button>
-          <h1 className="text-base font-bold text-white">
+          <h1 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center drop-shadow-md md:text-left md:text-3xl md:flex-none">
             {step === 'select-player' && 'Selecionar Cliente'}
             {step === 'select-products' && 'Adicionar Produtos'}
             {step === 'review' && 'Revisar Compra'}
           </h1>
-          <div className="w-6"></div> {/* Spacer */}
+          <div className="flex-1 md:hidden"></div>
         </div>
       </header>
 

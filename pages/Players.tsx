@@ -89,9 +89,9 @@ const Players: React.FC = () => {
 
   return (
     <div className="relative flex flex-col w-full min-h-screen">
-      <div className="px-4 pt-8 pb-4 sticky top-0 z-20">
-        <div className="flex justify-between items-center mb-6 pl-1">
-          <h1 className="text-3xl font-bold tracking-tighter text-white drop-shadow-md">Jogadores</h1>
+      <div className="px-4 pt-8 pb-4 sticky top-0 z-20 md:static md:px-0 md:mb-4">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center drop-shadow-md md:text-left md:text-3xl md:flex-none">Jogadores</h1>
         </div>
 
         <label className="relative flex w-full h-12">

@@ -23,15 +23,15 @@ export const Analytics: React.FC = () => {
     return (
         <div className="relative flex flex-col w-full min-h-screen">
             {/* Header */}
-            <div className="px-4 pt-8 pb-4 sticky top-0 z-20">
+            <div className="px-4 pt-8 pb-4 sticky top-0 z-20 md:static md:px-0 md:mb-4">
                 <div className="flex items-center gap-4 mb-6">
                     <button
                         onClick={() => navigate('/')}
-                        className="glass flex items-center justify-center rounded-full h-10 w-10 text-white hover:bg-white/10 transition-colors"
+                        className="glass flex items-center justify-center rounded-full h-10 w-10 text-white hover:bg-white/10 transition-colors md:hidden"
                     >
                         <span className="material-symbols-outlined">arrow_back</span>
                     </button>
-                    <h1 className="text-3xl font-bold tracking-tighter text-white drop-shadow-md flex-1">Analytics</h1>
+                    <h1 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center drop-shadow-md md:text-left md:text-3xl md:flex-none">Analytics</h1>
                     <button
                         onClick={resetAnalytics}
                         className="glass flex items-center justify-center rounded-full h-10 w-10 text-white hover:bg-red-500/20 transition-colors"

@@ -46,7 +46,7 @@ export const KPICard: React.FC<KPICardProps> = ({
                 <span className="material-symbols-outlined text-primary text-xl">{icon}</span>
             </div>
 
-            <h3 className="text-xl font-bold text-white mb-1 tracking-tight">
+            <h3 className="text-2xl font-black text-white mb-1 tracking-tight">
                 {typeof value === 'number' ? value.toLocaleString('pt-BR') : value}
             </h3>
 

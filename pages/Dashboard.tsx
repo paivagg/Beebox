@@ -4,6 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { useAuth } from '../context/AuthContext';
 import { formatMonthAbbr, formatDay, formatCurrencyValue } from '../utils/formatters';
+import { useAnalytics } from '../hooks/useAnalytics';
+import { KPICard } from '../components/analytics/KPICard';
+import { SalesChart } from '../components/analytics/SalesChart';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -60,6 +63,8 @@ const Dashboard: React.FC = () => {
     return transactions.length;
   }, [transactions]);
 
+  const analytics = useAnalytics(transactions, players, events, 'month');
+
 
 
   return (
@@ -79,105 +84,159 @@ const Dashboard: React.FC = () => {
         </div>
       </header>
 
-      <main className="flex-grow px-4">
-        {/* Metrics */}
-        <section className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-6">
-          <div className="glass-card flex flex-col gap-2 rounded-2xl p-5">
-            <p className="text-text-secondary-dark text-sm font-medium leading-normal uppercase tracking-wider">Inscrições do Mês</p>
-            <p className="text-white tracking-light text-2xl font-bold leading-tight">
-              R${formatCurrencyValue(monthlyRegistrations)}
-            </p>
-          </div>
-          <div
-            onClick={() => navigate('/sales-history')}
-            className="glass-card flex flex-col gap-2 rounded-2xl p-5 cursor-pointer hover:bg-white/5 active:scale-95 transition-all"
-          >
-            <div className="flex justify-between items-center">
-              <p className="text-text-secondary-dark text-sm font-medium leading-normal uppercase tracking-wider">Histórico</p>
-              <span className="material-symbols-outlined text-gray-400 text-sm">arrow_forward</span>
-            </div>
-            <p className="text-white tracking-light text-2xl font-bold leading-tight">{totalTransactionsCount} <span className="text-sm font-normal text-gray-400">transações</span></p>
-          </div>
-        </section>
-
-        {/* Quick Actions */}
-        <h2 className="text-white text-xl font-bold leading-tight tracking-[-0.015em] pt-8 pb-4 pl-1 drop-shadow-md">Ações Rápidas</h2>
-        <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-          <div
-            onClick={() => navigate('/pos')}
-            className="glass-card flex cursor-pointer items-center gap-3 rounded-2xl p-4 hover:bg-white/5 transition-all active:scale-95"
-          >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary">
-              <span className="material-symbols-outlined text-2xl">point_of_sale</span>
-            </div>
-            <h3 className="text-white text-sm font-bold leading-tight">PDV</h3>
-          </div>
-          <div
-            onClick={() => navigate('/events?create=true')}
-            className="glass-card flex cursor-pointer items-center gap-3 rounded-2xl p-4 hover:bg-white/5 transition-all active:scale-95"
-          >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary">
-              <span className="material-symbols-outlined text-2xl">event</span>
-            </div>
-            <h3 className="text-white text-sm font-bold leading-tight">Criar Evento</h3>
-          </div>
-          <div
-            onClick={() => navigate('/products')}
-            className="glass-card flex cursor-pointer items-center gap-3 rounded-2xl p-4 hover:bg-white/5 transition-all active:scale-95"
-          >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary">
-              <span className="material-symbols-outlined text-2xl">inventory_2</span>
-            </div>
-            <h3 className="text-white text-sm font-bold leading-tight">Produtos</h3>
-          </div>
-          <div
-            onClick={() => navigate('/players')}
-            className="glass-card flex cursor-pointer items-center gap-3 rounded-2xl p-4 hover:bg-white/5 transition-all active:scale-95"
-          >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary">
-              <span className="material-symbols-outlined text-2xl">person_search</span>
-            </div>
-            <h3 className="text-white text-sm font-bold leading-tight">Jogadores</h3>
-          </div>
-          <div
-            onClick={() => navigate('/analytics')}
-            className="glass-card flex cursor-pointer items-center gap-3 rounded-2xl p-4 hover:bg-white/5 transition-all active:scale-95"
-          >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary">
-              <span className="material-symbols-outlined text-2xl">analytics</span>
-            </div>
-            <h3 className="text-white text-sm font-bold leading-tight">Analytics</h3>
-          </div>
-        </section>
-
-        {/* Top Players */}
-        <div className="flex items-center justify-between pt-8 pb-4 pl-1">
-          <h2 className="text-white text-xl font-bold leading-tight tracking-[-0.015em] drop-shadow-md">Top Players</h2>
-          <button className="text-primary text-sm font-bold hover:underline" onClick={() => navigate('/players')}>Ver todos</button>
-        </div>
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {topPlayers.length > 0 ? topPlayers.map(player => (
-            <div key={player.id} className="glass-card flex items-center gap-4 rounded-2xl p-4 transition-colors hover:bg-white/5 cursor-pointer" onClick={() => navigate(`/player/${player.id}`)}>
-              <div
-                className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-12 w-12 border border-white/10"
-                style={{ backgroundImage: `url("${player.avatar_url}")` }}
-              ></div>
-              <div className="flex-1">
-                <p className="font-bold text-white line-clamp-1">{player.name}</p>
-                <p className="text-sm text-text-secondary-dark">Volume total de movimentação</p>
+      <main className="flex-grow px-4 pb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column: Actions and Lists */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Metrics (Mobile/Tablet) */}
+            <section className="grid grid-cols-2 gap-4 pt-4 lg:hidden">
+              <div className="glass-card flex flex-col gap-2 rounded-2xl p-5">
+                <p className="text-text-secondary-dark text-xs font-bold leading-normal uppercase tracking-wider">Inscrições</p>
+                <p className="text-white tracking-light text-xl font-bold leading-tight">
+                  R${formatCurrencyValue(monthlyRegistrations)}
+                </p>
               </div>
-              <div className="text-right">
-                <div className="inline-flex items-center justify-center px-2 py-1 rounded-lg bg-white/5">
-                  <p className="font-bold text-positive text-sm">R$ {formatCurrencyValue(player.volume)}</p>
+              <div
+                onClick={() => navigate('/sales-history')}
+                className="glass-card flex flex-col gap-2 rounded-2xl p-5 cursor-pointer hover:bg-white/5 active:scale-95 transition-all"
+              >
+                <p className="text-text-secondary-dark text-xs font-bold leading-normal uppercase tracking-wider">Transações</p>
+                <p className="text-white tracking-light text-xl font-bold leading-tight">{totalTransactionsCount}</p>
+              </div>
+            </section>
+
+            {/* Quick Actions */}
+            <div>
+              <h2 className="text-white text-xl font-bold leading-tight tracking-[-0.015em] pb-4 drop-shadow-md">Ações Rápidas</h2>
+              <section className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div
+                  onClick={() => navigate('/pos')}
+                  className="glass-card flex cursor-pointer items-center gap-3 rounded-2xl p-4 hover:bg-white/5 transition-all active:scale-95"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary">
+                    <span className="material-symbols-outlined text-2xl">point_of_sale</span>
+                  </div>
+                  <h3 className="text-white text-sm font-bold leading-tight">PDV</h3>
+                </div>
+                <div
+                  onClick={() => navigate('/events?create=true')}
+                  className="glass-card flex cursor-pointer items-center gap-3 rounded-2xl p-4 hover:bg-white/5 transition-all active:scale-95"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary">
+                    <span className="material-symbols-outlined text-2xl">event</span>
+                  </div>
+                  <h3 className="text-white text-sm font-bold leading-tight">Criar Evento</h3>
+                </div>
+                <div
+                  onClick={() => navigate('/products')}
+                  className="glass-card flex cursor-pointer items-center gap-3 rounded-2xl p-4 hover:bg-white/5 transition-all active:scale-95"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary">
+                    <span className="material-symbols-outlined text-2xl">inventory_2</span>
+                  </div>
+                  <h3 className="text-white text-sm font-bold leading-tight">Produtos</h3>
+                </div>
+                <div
+                  onClick={() => navigate('/players')}
+                  className="glass-card flex cursor-pointer items-center gap-3 rounded-2xl p-4 hover:bg-white/5 transition-all active:scale-95"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary">
+                    <span className="material-symbols-outlined text-2xl">person_search</span>
+                  </div>
+                  <h3 className="text-white text-sm font-bold leading-tight">Jogadores</h3>
+                </div>
+                <div
+                  onClick={() => navigate('/analytics')}
+                  className="glass-card flex cursor-pointer items-center gap-3 rounded-2xl p-4 hover:bg-white/5 transition-all active:scale-95"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary">
+                    <span className="material-symbols-outlined text-2xl">analytics</span>
+                  </div>
+                  <h3 className="text-white text-sm font-bold leading-tight">Analytics</h3>
+                </div>
+              </section>
+            </div>
+
+            {/* Top Players */}
+            <div>
+              <div className="flex items-center justify-between pb-4">
+                <h2 className="text-white text-xl font-bold leading-tight tracking-[-0.015em] drop-shadow-md">Top Players</h2>
+                <button className="text-primary text-sm font-bold hover:underline" onClick={() => navigate('/players')}>Ver todos</button>
+              </div>
+              <section className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {topPlayers.length > 0 ? topPlayers.map(player => (
+                  <div key={player.id} className="glass-card flex items-center gap-4 rounded-2xl p-4 transition-colors hover:bg-white/5 cursor-pointer" onClick={() => navigate(`/player/${player.id}`)}>
+                    <div
+                      className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-12 w-12 border border-white/10"
+                      style={{ backgroundImage: `url("${player.avatar_url}")` }}
+                    ></div>
+                    <div className="flex-1">
+                      <p className="font-bold text-white line-clamp-1">{player.name}</p>
+                      <p className="text-sm text-text-secondary-dark">Volume total</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-positive text-sm">R$ {formatCurrencyValue(player.volume)}</p>
+                    </div>
+                  </div>
+                )) : (
+                  <div className="text-center text-gray-400 py-6 glass-card rounded-2xl md:col-span-2">
+                    Nenhuma movimentação registrada.
+                  </div>
+                )}
+              </section>
+            </div>
+          </div>
+
+          {/* Right Column: Analytics Summary */}
+          <div className="lg:col-span-1">
+            <div className="glass-card rounded-[2.5rem] p-6 border border-white/5 sticky top-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-black text-white tracking-tight">Analytics</h2>
+                <button
+                  onClick={() => navigate('/analytics')}
+                  className="h-10 w-10 rounded-full glass flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all"
+                >
+                  <span className="material-symbols-outlined">open_in_new</span>
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <KPICard
+                    title="Vendas"
+                    value={`R$ ${analytics.totalSales.toFixed(2)}`}
+                    change={analytics.changeVsPrevious.sales}
+                    icon="payments"
+                    trend={analytics.changeVsPrevious.sales >= 0 ? 'up' : 'down'}
+                  />
+                  <KPICard
+                    title="Ticket"
+                    value={`R$ ${analytics.averageTicket.toFixed(2)}`}
+                    icon="shopping_cart"
+                  />
+                </div>
+
+                <div className="glass-card rounded-2xl p-4 bg-white/5">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Vendas (30 dias)</p>
+                  <div className="h-[200px]">
+                    <SalesChart data={analytics.salesByDay} hideHeader />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="glass-card rounded-2xl p-4 border border-white/5">
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Transações</p>
+                    <p className="text-lg font-bold text-white">{analytics.totalTransactions}</p>
+                  </div>
+                  <div className="glass-card rounded-2xl p-4 border border-white/5">
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Players Ativos</p>
+                    <p className="text-lg font-bold text-white">{analytics.activePlayers}</p>
+                  </div>
                 </div>
               </div>
             </div>
-          )) : (
-            <div className="text-center text-gray-400 py-6 glass-card rounded-2xl md:col-span-2">
-              Nenhuma movimentação registrada.
-            </div>
-          )}
-        </section>
+          </div>
+        </div>
       </main>
 
     </div>
