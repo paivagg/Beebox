@@ -4,8 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 const transactions = new Hono();
 
 const getSupabase = (c: any) => {
-    const supabaseUrl = process.env.SUPABASE_URL || c.env?.SUPABASE_URL;
-    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || c.env?.SUPABASE_ANON_KEY;
+    const supabaseUrl = process.env.SUPABASE_URL || c.env?.SUPABASE_URL || process.env.VITE_SUPABASE_URL || c.env?.VITE_SUPABASE_URL;
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || c.env?.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || c.env?.VITE_SUPABASE_ANON_KEY;
     return createClient(supabaseUrl, supabaseAnonKey);
 };
 

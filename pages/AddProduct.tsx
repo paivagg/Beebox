@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { Product } from '../types';
+import { v4 as uuidv4 } from 'uuid';
 
 const AddProduct: React.FC = () => {
   const navigate = useNavigate();
@@ -44,7 +45,7 @@ const AddProduct: React.FC = () => {
     const parsedCost = cost ? parseFloat(cost.replace(',', '.')) : undefined;
 
     const productData: Product = {
-      id: id || Date.now().toString(),
+      id: id || uuidv4(),
       name,
       product_collection: collection,
       stock,

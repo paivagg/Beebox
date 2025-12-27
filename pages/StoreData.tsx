@@ -58,28 +58,24 @@ const StoreData: React.FC = () => {
                 <section className="space-y-4">
                     <div className="space-y-2">
                         <label className="text-sm font-bold text-gray-400 uppercase tracking-wider pl-1">Nome da Loja</label>
-                        <div className="glass-card rounded-xl p-1">
-                            <input
-                                type="text"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                className="w-full bg-transparent p-3 text-white outline-none placeholder:text-gray-600"
-                                placeholder="Ex: TCG Store"
-                            />
-                        </div>
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="glass-input w-full rounded-2xl p-4 text-white placeholder:text-gray-600"
+                            placeholder="Ex: TCG Store"
+                        />
                     </div>
 
                     <div className="space-y-2">
                         <label className="text-sm font-bold text-gray-400 uppercase tracking-wider pl-1">URL da Imagem de Perfil</label>
-                        <div className="glass-card rounded-xl p-1">
-                            <input
-                                type="text"
-                                value={avatar_url}
-                                onChange={(e) => setAvatarUrl(e.target.value)}
-                                className="w-full bg-transparent p-3 text-white outline-none placeholder:text-gray-600"
-                                placeholder="https://..."
-                            />
-                        </div>
+                        <input
+                            type="text"
+                            value={avatar_url}
+                            onChange={(e) => setAvatarUrl(e.target.value)}
+                            className="glass-input w-full rounded-2xl p-4 text-white placeholder:text-gray-600"
+                            placeholder="https://..."
+                        />
                         <p className="text-xs text-gray-500 pl-1">Cole um link direto para a imagem.</p>
                     </div>
                 </section>

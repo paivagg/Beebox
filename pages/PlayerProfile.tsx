@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { Transaction, Product, Player } from '../types';
+import { v4 as uuidv4 } from 'uuid';
 
 const PlayerProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -33,7 +34,7 @@ const PlayerProfile: React.FC = () => {
     if (!amount || isNaN(parseFloat(amount))) return;
 
     const newTx: Transaction = {
-      id: Date.now().toString(),
+      id: uuidv4(),
       player_id: player.id,
       type: transactionType,
       title: title || (transactionType === 'credit' ? 'Crédito Adicionado' : 'Débito Manual'),
@@ -116,39 +117,38 @@ const PlayerProfile: React.FC = () => {
       </header>
 
       <main className="flex-1 px-4 pb-32">
-        {/* Avatar Section */}
-        <section className="flex w-full flex-col gap-4 items-center pt-6">
-          <div className="flex gap-4 flex-col items-center">
+        {/* Header/Avatar Section Grouped */}
+        <section className="flex w-full flex-col items-center pt-4">
+          <div className="glass-card w-full rounded-3xl p-6 flex flex-col items-center gap-4 border border-white/10 shadow-xl">
             <div
-              className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 border-4 border-white/10 shadow-2xl"
+              className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-24 w-24 border-4 border-white/10 shadow-lg"
               style={{ backgroundImage: `url("${player.avatar_url}")` }}
             ></div>
             <div className="flex flex-col items-center justify-center">
-              <p className="text-white text-[24px] font-bold leading-tight tracking-[-0.015em] text-center drop-shadow-sm">{player.name}</p>
-              <p className="text-gray-400 text-base font-normal leading-normal text-center mt-1">DCI: {player.dci || 'N/A'}</p>
+              <p className="text-white text-2xl font-bold leading-tight tracking-tight text-center">{player.name}</p>
+              <p className="text-gray-400 text-sm font-medium text-center mt-1">DCI: {player.dci || 'N/A'}</p>
             </div>
-          </div>
-        </section>
 
-        {/* Balance Card */}
-        <section className="pt-8">
-          <div className={`glass-card flex flex-col items-center justify-center rounded-3xl p-8 border ${player.balance >= 0 ? 'border-primary/20' : 'border-negative/20'} shadow-lg`}>
-            <p className="text-gray-400 text-sm font-bold uppercase tracking-widest mb-2">
-              {player.balance >= 0 ? 'Saldo em Créditos' : 'Dívida Total'}
-            </p>
-            <div className="flex items-center gap-2">
-              <p className={`text-5xl font-bold leading-tight tracking-[-0.02em] ${player.balance >= 0 ? 'text-primary' : 'text-negative'} drop-shadow-lg`}>
-                R$ {Math.abs(player.balance).toFixed(2).replace('.', ',')}
+            <div className="w-full h-px bg-white/5 my-2"></div>
+
+            <div className="flex flex-col items-center justify-center w-full">
+              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">
+                {player.balance >= 0 ? 'Saldo Disponível' : 'Débito Pendente'}
               </p>
-              {player.balance < 0 && (
-                <span className="material-symbols-outlined text-negative text-4xl animate-pulse">warning</span>
+              <div className="flex items-center gap-2">
+                <p className={`text-4xl font-black leading-tight ${player.balance >= 0 ? 'text-positive' : 'text-negative'} drop-shadow-sm`}>
+                  R$ {Math.abs(player.balance).toFixed(2).replace('.', ',')}
+                </p>
+                {player.balance < 0 && (
+                  <span className="material-symbols-outlined text-negative text-2xl animate-pulse">warning</span>
+                )}
+              </div>
+              {player.balance > 0 && player.credit_updated_at && (
+                <p className="text-orange-400/80 text-[10px] font-bold mt-2 uppercase tracking-wider">
+                  Expira em: {new Date(new Date(player.credit_updated_at).getTime() + 60 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')}
+                </p>
               )}
             </div>
-            {player.balance > 0 && player.credit_updated_at && (
-              <p className="text-orange-400 text-xs font-bold mt-4 uppercase tracking-wider">
-                Vence em: {new Date(new Date(player.credit_updated_at).getTime() + 60 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')}
-              </p>
-            )}
           </div>
         </section>
 
@@ -211,17 +211,17 @@ const PlayerProfile: React.FC = () => {
         <div className="flex w-full max-w-sm justify-around items-center rounded-3xl glass-nav p-2 gap-3">
           <button
             onClick={() => openTransactionModal('credit')}
-            className="flex flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-3 bg-positive text-white active:scale-95 transition-all shadow-lg shadow-green-900/20"
+            className="flex flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl py-2 bg-positive text-white active:scale-95 transition-all shadow-lg shadow-green-900/20"
           >
-            <span className="material-symbols-outlined text-2xl filled">add_circle</span>
-            <span className="text-xs font-bold">Adicionar</span>
+            <span className="material-symbols-outlined text-xl filled">add_circle</span>
+            <span className="text-[10px] font-bold uppercase">Adicionar</span>
           </button>
           <button
             onClick={() => openTransactionModal('debit')}
-            className="flex flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-3 bg-negative text-white active:scale-95 transition-all shadow-lg shadow-red-900/20"
+            className="flex flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl py-2 bg-negative text-white active:scale-95 transition-all shadow-lg shadow-red-900/20"
           >
-            <span className="material-symbols-outlined text-2xl">remove_circle</span>
-            <span className="text-xs font-bold">Gasto</span>
+            <span className="material-symbols-outlined text-xl">remove_circle</span>
+            <span className="text-[10px] font-bold uppercase">Gasto</span>
           </button>
         </div>
       </nav>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { Product } from '../types';
+import { v4 as uuidv4 } from 'uuid';
 
 const Products: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -24,7 +25,7 @@ const Products: React.FC = () => {
   const handleQuickAdd = () => {
     if (!newProductName.trim()) return;
 
-    const newId = Date.now().toString();
+    const newId = uuidv4();
     const newProduct: Product = {
       id: newId,
       name: newProductName,
@@ -81,8 +82,8 @@ const Products: React.FC = () => {
               key={filter}
               onClick={() => setActiveFilter(filter)}
               className={`flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full px-5 transition-all backdrop-blur-md border border-white/10 ${activeFilter === filter
-                  ? 'bg-primary text-white shadow-lg'
-                  : 'bg-white/5 text-gray-300 hover:bg-white/10'
+                ? 'bg-primary text-white shadow-lg'
+                : 'bg-white/5 text-gray-300 hover:bg-white/10'
                 }`}
             >
               <p className="text-sm font-medium leading-normal">{filter}</p>

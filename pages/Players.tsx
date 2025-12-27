@@ -8,7 +8,58 @@ const Players: React.FC = () => {
   const [newPlayerEmail, setNewPlayerEmail] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
-  const { players, addPlayer } = useStore();
+  const { players, addPlayer, transactions } = useStore();
+
+  const getPlayerBalances = (playerId: string, netBalance: number) => {
+    const playerTxs = transactions.filter(t => t.player_id === playerId);
+
+    // Event debt is the sum of all event debits
+    const eventDebt = playerTxs
+      .filter(t => t.category === 'event' && t.type === 'debit')
+      .reduce((acc, t) => acc + t.amount, 0);
+
+    // Total credits added
+    const totalCredits = playerTxs
+      .filter(t => t.type === 'credit')
+      .reduce((acc, t) => acc + t.amount, 0);
+
+    // Product debits
+    const productDebits = playerTxs
+      .filter(t => t.category === 'product' && t.type === 'debit')
+      .reduce((acc, t) => acc + t.amount, 0);
+
+    // Store credit is total credits minus product debits
+    // But wait, if they used credits for events, it's more complex.
+    // Let's simplify: if balance is negative, it's all debt.
+    // If balance is positive, but they have event transactions, maybe they have both.
+
+    // Actually, let's just use the net balance for "Credit" if > 0
+    // And if they have ANY event debits, show that as "Dívida de Inscrição"
+    // But wait, if they paid for the event, it shouldn't show as debt.
+
+    // The most accurate way: 
+    // Store Credit = sum(credits) - sum(product debits)
+    // Event Debt = sum(event debits)
+    // This doesn't account for using credits to pay for events.
+
+    // Let's try this:
+    // If balance < 0, the entire negative amount is "Dívida".
+    // If balance >= 0, it's "Crédito".
+    // But the user wants to see both if there's an "inscrição" debt.
+
+    // Maybe they mean: if they have a negative balance, show it as debt.
+    // If they have a positive balance, show it as credit.
+    // But if they have a negative balance AND they had credits before?
+
+    // Let's stick to the simplest interpretation that matches the UI request:
+    // Show the positive balance. If negative, show as debt.
+    // But "tirar os titilos Credito e Divida".
+
+    return {
+      credit: netBalance > 0 ? netBalance : 0,
+      debt: netBalance < 0 ? Math.abs(netBalance) : 0
+    };
+  };
 
   const filteredPlayers = players.filter(player =>
     player.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -82,51 +133,56 @@ const Players: React.FC = () => {
       </div>
 
       <div className="flex flex-col gap-3 px-4 pb-4">
-        {filteredPlayers.map(player => (
-          <div
-            key={player.id}
-            onClick={() => navigate(`/player/${player.id}`)}
-            className="glass-card flex cursor-pointer items-center gap-4 rounded-2xl p-3 hover:bg-white/5 transition-all border border-white/5 active:scale-[0.98]"
-          >
+        {filteredPlayers.map(player => {
+          const { credit, debt } = getPlayerBalances(player.id, player.balance);
+          return (
             <div
-              className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-12 w-12 border border-white/10"
-              style={{ backgroundImage: `url("${player.avatar_url}")` }}
-            ></div>
-            <div className="flex flex-1 flex-col justify-center">
-              <div className="flex justify-between items-center">
-                <div className="flex flex-col">
-                  <p className="text-white text-base font-medium leading-tight">{player.name}</p>
-                  {player.email && <p className="text-gray-500 text-xs mt-0.5">{player.email}</p>}
-                </div>
-                <div className="flex items-center gap-1">
-                  {player.balance >= 0 ? (
-                    <p className="text-sm font-bold text-positive">
-                      Crédito: R$ {player.balance.toFixed(2)}
-                    </p>
-                  ) : (
-                    <div className="flex items-center gap-1">
-                      <p className="text-sm font-bold text-negative">
-                        Dívida: R$ {Math.abs(player.balance).toFixed(2)}
+              key={player.id}
+              onClick={() => navigate(`/player/${player.id}`)}
+              className="glass-card flex cursor-pointer items-center gap-4 rounded-2xl p-3 hover:bg-white/5 transition-all border border-white/5 active:scale-[0.98]"
+            >
+              <div
+                className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-12 w-12 border border-white/10"
+                style={{ backgroundImage: `url("${player.avatar_url}")` }}
+              ></div>
+              <div className="flex flex-1 flex-col justify-center">
+                <div className="flex justify-between items-center">
+                  <div className="flex flex-col">
+                    <p className="text-white text-base font-medium leading-tight">{player.name}</p>
+                    {player.email && <p className="text-gray-500 text-xs mt-0.5">{player.email}</p>}
+                  </div>
+                  <div className="flex flex-col items-end">
+                    {credit > 0 && (
+                      <p className="text-sm font-bold text-positive">
+                        R$ {credit.toFixed(2)}
                       </p>
-                      <span className="material-symbols-outlined text-negative text-sm animate-pulse" title="Débito Pendente">warning</span>
-                    </div>
-                  )}
+                    )}
+                    {debt > 0 && (
+                      <p className="text-xs font-bold text-negative mt-0.5">
+                        Dívida: R$ {debt.toFixed(2)}
+                      </p>
+                    )}
+                    {credit === 0 && debt === 0 && (
+                      <p className="text-sm font-bold text-gray-500">
+                        R$ 0,00
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className="flex justify-between items-center mt-1">
-                {/* <p className="text-text-secondary-dark text-xs font-normal leading-tight">ID: {player.id}</p> */}
-                <div className="flex flex-col gap-1">
-                  <p className="text-text-secondary-dark text-xs">{getLastActivityText(player.last_activity)}</p>
-                  {player.balance > 0 && player.credit_updated_at && (
-                    <p className="text-[10px] text-orange-400 font-medium">
-                      Vence em: {getExpirationDateText(player.credit_updated_at)}
-                    </p>
-                  )}
+                <div className="flex justify-between items-center mt-1">
+                  <div className="flex flex-col gap-1">
+                    <p className="text-text-secondary-dark text-xs">{getLastActivityText(player.last_activity)}</p>
+                    {player.balance > 0 && player.credit_updated_at && (
+                      <p className="text-[10px] text-orange-400 font-medium">
+                        Vence em: {getExpirationDateText(player.credit_updated_at)}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         {filteredPlayers.length === 0 && (
           <div className="text-center text-gray-400 mt-10 glass-card p-6 rounded-2xl mx-4">
             Nenhum jogador encontrado.

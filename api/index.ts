@@ -18,7 +18,7 @@ app.use('*', cors({
 app.use('*', logger());
 
 // Health check (public)
-app.get('/health', (c) => c.json({
+app.get('/api/health', (c) => c.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
     version: '2.0.0-edge'
@@ -41,5 +41,9 @@ app.onError((err, c) => {
         error: err.message || 'Internal Server Error'
     }, 500);
 });
+
+export const config = {
+    runtime: 'edge'
+};
 
 export default app;

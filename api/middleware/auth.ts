@@ -11,8 +11,8 @@ export const authMiddleware = async (c: Context, next: Next) => {
     const token = authHeader.substring(7);
 
     // Get Supabase credentials from environment
-    const supabaseUrl = process.env.SUPABASE_URL || c.env?.SUPABASE_URL;
-    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || c.env?.SUPABASE_ANON_KEY;
+    const supabaseUrl = process.env.SUPABASE_URL || c.env?.SUPABASE_URL || process.env.VITE_SUPABASE_URL || c.env?.VITE_SUPABASE_URL;
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || c.env?.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || c.env?.VITE_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey) {
         console.error('Missing Supabase credentials');

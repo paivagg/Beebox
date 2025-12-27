@@ -164,9 +164,12 @@ const POS: React.FC = () => {
 
       const isEventItem = (item: CartItem) =>
         item.category === 'Event' ||
+        item.category === 'Torneio' ||
+        item.category === 'Inscrição' ||
         item.name.toLowerCase().includes('torneio') ||
-        item.name.toLowerCase().includes('campeonato') ||
-        item.name.toLowerCase().includes('inscrição');
+        item.name.toLowerCase().includes('evento') ||
+        item.name.toLowerCase().includes('inscrição') ||
+        item.name.toLowerCase().includes('campeonato');
 
       const eventCartItems = cart.filter(isEventItem);
       const productCartItems = cart.filter(i => !isEventItem(i));
@@ -186,7 +189,7 @@ const POS: React.FC = () => {
       // 1. Products
       if (productCartItems.length > 0 && debitProductAmount > 0) {
         await addTransaction({
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           player_id: selectedPlayer.id,
           type: 'debit',
           category: 'product',
@@ -207,7 +210,7 @@ const POS: React.FC = () => {
       // 2. Events
       if (eventCartItems.length > 0 && debitEventAmount > 0) {
         await addTransaction({
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           player_id: selectedPlayer.id,
           type: 'debit',
           category: 'event',
@@ -219,9 +222,9 @@ const POS: React.FC = () => {
       }
 
       if (eventCartItems.length > 0) {
-        eventCartItems.forEach(item => {
-          updateProductStock(item.id, -item.quantity);
-        });
+        for (const item of eventCartItems) {
+          await updateProductStock(item.id, -item.quantity);
+        }
       }
 
       setIsConfirmModalOpen(false);
@@ -232,9 +235,10 @@ const POS: React.FC = () => {
       setPaymentMethod('cash');
       success(SUCCESS_MESSAGES.SALE_COMPLETED);
     } catch (err) {
+      console.error('POS Error:', err);
       error('Erro ao processar venda: ' + (err instanceof Error ? err.message : 'Erro desconhecido'));
     }
-  }, [selectedPlayer, confirmData, cart, addTransaction, updateProductStock, navigate, success, error, paymentMethod]);
+  }, [selectedPlayer, confirmData, cart, addTransaction, updateProductStock, addProduct, saveCustomAsProduct, success, error, paymentMethod]);
 
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">

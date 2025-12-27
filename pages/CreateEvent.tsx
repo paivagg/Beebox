@@ -1,8 +1,8 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { Event } from '../types';
+import { v4 as uuidv4 } from 'uuid';
 
 const CreateEvent: React.FC = () => {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ const CreateEvent: React.FC = () => {
     const dummyTime = '12:00'; // Default hidden time since we removed the field
 
     const newEvent: Event = {
-      id: Date.now().toString(),
+      id: uuidv4(),
       title,
       date: new Date(`${finalDate}T${dummyTime}`).toISOString(),
       time: dummyTime,
@@ -51,7 +51,7 @@ const CreateEvent: React.FC = () => {
             <div className="flex items-center p-4">
               <label className="w-1/3 text-sm font-medium text-gray-400">Nome <span className="text-primary">*</span></label>
               <input
-                className="form-input w-2/3 appearance-none border-none bg-transparent p-0 text-right text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-0"
+                className="glass-input w-2/3 rounded-xl px-3 py-2 text-right text-base text-white placeholder:text-gray-600 focus:outline-none focus:ring-0 font-medium"
                 type="text"
                 placeholder="Ex: Torneio Modern"
                 value={title}
@@ -63,7 +63,7 @@ const CreateEvent: React.FC = () => {
             <div className="flex items-center p-4 border-t border-white/5">
               <label className="w-1/3 text-sm font-medium text-gray-400">Data</label>
               <input
-                className="form-input w-2/3 appearance-none border-none bg-transparent p-0 text-right text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-0"
+                className="glass-input w-2/3 rounded-xl px-3 py-2 text-right text-base text-white placeholder:text-gray-600 focus:outline-none focus:ring-0 font-medium"
                 type="date"
                 value={date}
                 onChange={e => setDate(e.target.value)}
@@ -75,7 +75,7 @@ const CreateEvent: React.FC = () => {
             <div className="flex items-center p-4">
               <label className="w-1/3 text-sm font-medium text-gray-400">Inscrição (R$)</label>
               <input
-                className="form-input w-2/3 appearance-none border-none bg-transparent p-0 text-right text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-0"
+                className="glass-input w-2/3 rounded-xl px-3 py-2 text-right text-base text-white placeholder:text-gray-600 focus:outline-none focus:ring-0 font-medium"
                 type="number"
                 placeholder="0,00"
                 value={price}
