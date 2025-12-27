@@ -69,7 +69,7 @@ const Products: React.FC = () => {
               onClick={() => setIsModalOpen(true)}
               className="absolute inset-y-0 right-0 flex items-center pr-2 z-10"
             >
-              <div className="flex items-center justify-center h-8 w-8 bg-primary rounded-xl shadow-lg hover:bg-orange-600 active:scale-95 transition-all">
+              <div className="flex items-center justify-center h-10 w-10 bg-primary rounded-2xl shadow-lg hover:bg-orange-600 active:scale-95 transition-all">
                 <span className="material-symbols-outlined text-white text-xl">add</span>
               </div>
             </button>
@@ -92,7 +92,7 @@ const Products: React.FC = () => {
         </div>
       </div>
 
-      <main className="flex-grow px-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 pb-24">
+      <main className="flex-grow px-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 pb-24 max-w-[1400px] mx-auto w-full">
         {filteredProducts.map(product => (
           <div
             key={product.id}

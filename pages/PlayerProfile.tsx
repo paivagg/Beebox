@@ -120,24 +120,27 @@ const PlayerProfile: React.FC = () => {
 
   return (
     <div className="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
-      <header className="flex items-center p-4 pb-2 pt-8 justify-between sticky top-0 z-20">
-        <button onClick={() => navigate(-1)} className="glass flex size-10 shrink-0 items-center justify-center rounded-full text-white hover:bg-white/10 transition-colors">
-          <span className="material-symbols-outlined text-xl">arrow_back_ios_new</span>
-        </button>
-        <h1 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center drop-shadow-md">Perfil</h1>
-        <div className="flex gap-2">
-          <button
-            onClick={openEditModal}
-            className="glass flex size-10 shrink-0 items-center justify-center rounded-full text-primary hover:text-orange-400"
-          >
-            <span className="material-symbols-outlined text-xl">edit</span>
+      <header className="sticky top-0 z-20 p-4 pt-8 md:static md:px-0 md:mb-4">
+        <div className="flex items-center justify-between">
+          <button onClick={() => navigate(-1)} className="glass flex h-10 w-10 items-center justify-center rounded-full text-white hover:bg-white/10 transition-colors md:hidden">
+            <span className="material-symbols-outlined text-lg">arrow_back_ios_new</span>
           </button>
-          <button
-            onClick={handleDelete}
-            className="glass flex size-10 shrink-0 items-center justify-center rounded-full text-negative hover:text-red-400"
-          >
-            <span className="material-symbols-outlined text-xl">delete</span>
-          </button>
+          <h1 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center drop-shadow-md md:text-left md:text-3xl md:flex-none">Perfil do Jogador</h1>
+          <div className="flex-1 md:hidden"></div>
+          <div className="flex gap-2">
+            <button
+              onClick={openEditModal}
+              className="glass flex size-10 shrink-0 items-center justify-center rounded-full text-primary hover:text-orange-400"
+            >
+              <span className="material-symbols-outlined text-xl">edit</span>
+            </button>
+            <button
+              onClick={handleDelete}
+              className="glass flex size-10 shrink-0 items-center justify-center rounded-full text-negative hover:text-red-400"
+            >
+              <span className="material-symbols-outlined text-xl">delete</span>
+            </button>
+          </div>
         </div>
       </header>
 

@@ -111,7 +111,7 @@ const Events: React.FC = () => {
           <h1 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center drop-shadow-md md:text-left md:text-3xl md:flex-none">Eventos</h1>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center justify-center h-10 w-10 bg-primary/80 backdrop-blur rounded-full shadow-lg hover:bg-primary transition-all md:h-12 md:w-12"
+            className="flex items-center justify-center h-10 w-10 bg-primary rounded-2xl shadow-lg hover:bg-orange-600 active:scale-95 transition-all"
           >
             <span className="material-symbols-outlined text-white">add</span>
           </button>

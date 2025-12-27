@@ -210,9 +210,9 @@ const Dashboard: React.FC = () => {
                     trend={analytics.changeVsPrevious.sales >= 0 ? 'up' : 'down'}
                   />
                   <KPICard
-                    title="Ticket"
-                    value={`R$ ${analytics.averageTicket.toFixed(2)}`}
-                    icon="shopping_cart"
+                    title="Créditos"
+                    value={`R$ ${analytics.activeCredits.toFixed(2)}`}
+                    icon="account_balance_wallet"
                   />
                 </div>
 

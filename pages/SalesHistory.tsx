@@ -5,7 +5,7 @@ import { useStore } from '../context/StoreContext';
 
 const SalesHistory: React.FC = () => {
   const navigate = useNavigate();
-  const { transactions, players } = useStore();
+  const { transactions, players, resetAnalytics } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
 
   // Filter only debit transactions (sales)
@@ -40,7 +40,14 @@ const SalesHistory: React.FC = () => {
             <span className="material-symbols-outlined text-lg">arrow_back_ios_new</span>
           </button>
           <h1 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center drop-shadow-md md:text-left md:text-3xl md:flex-none">Histórico de Vendas</h1>
-          <div className="flex-1 md:hidden"></div>
+          <button
+            onClick={resetAnalytics}
+            className="glass flex h-10 w-10 items-center justify-center rounded-full text-white hover:bg-red-500/20 transition-colors"
+            title="Limpar Histórico"
+          >
+            <span className="material-symbols-outlined text-lg">delete_sweep</span>
+          </button>
+          <div className="w-2 md:hidden"></div>
         </div>
       </header>
 

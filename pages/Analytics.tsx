@@ -60,7 +60,7 @@ export const Analytics: React.FC = () => {
 
             <div className="flex flex-col gap-4 px-4 pb-4">
                 {/* KPI Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                     <KPICard
                         title="Vendas"
                         value={`R$ ${analytics.totalSales.toFixed(2)}`}
@@ -74,13 +74,6 @@ export const Analytics: React.FC = () => {
                         change={analytics.changeVsPrevious.transactions}
                         icon="receipt_long"
                         trend={analytics.changeVsPrevious.transactions >= 0 ? 'up' : 'down'}
-                    />
-                    <KPICard
-                        title="Ticket Médio"
-                        value={`R$ ${analytics.averageTicket.toFixed(2)}`}
-                        change={analytics.changeVsPrevious.ticket}
-                        icon="shopping_cart"
-                        trend={analytics.changeVsPrevious.ticket >= 0 ? 'up' : 'down'}
                     />
                     <KPICard
                         title="Créditos"

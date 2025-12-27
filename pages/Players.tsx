@@ -134,38 +134,34 @@ const Players: React.FC = () => {
                 style={{ backgroundImage: `url("${player.avatar_url}")` }}
               ></div>
               <div className="flex flex-1 flex-col justify-center">
-                <div className="flex justify-between items-center">
-                  <div className="flex flex-col">
-                    <p className="text-white text-base font-medium leading-tight">{player.name}</p>
-                    {player.email && <p className="text-gray-500 text-xs mt-0.5">{player.email}</p>}
+                <div className="flex justify-between items-start">
+                  <div className="flex flex-col gap-0.5">
+                    <p className="text-white text-base font-bold leading-tight tracking-tight">{player.name}</p>
+                    <p className="text-text-secondary-dark text-xs font-medium">{getLastActivityText(player.last_activity)}</p>
+                    {player.balance > 0 && player.credit_updated_at && (
+                      <p className="text-[10px] text-orange-400 font-bold uppercase tracking-wider mt-0.5">
+                        Vence em: {getExpirationDateText(player.credit_updated_at)}
+                      </p>
+                    )}
+                    {player.email && <p className="text-gray-500 text-[10px] mt-1 italic">{player.email}</p>}
                   </div>
-                  <div className="flex flex-col items-end">
+                  <div className="flex flex-col items-end pt-0.5">
                     {credit > 0 && (
-                      <p className="text-sm font-bold text-positive">
+                      <p className="text-base font-black text-positive tracking-tight">
                         R$ {credit.toFixed(2)}
                       </p>
                     )}
                     {eventDebt > 0 && (
                       <div className="flex items-center gap-1 mt-0.5">
-                        <p className="text-xs font-bold text-negative">
+                        <p className="text-sm font-black text-negative tracking-tight">
                           - R$ {eventDebt.toFixed(2)}
                         </p>
                         <span className="material-symbols-outlined text-negative text-sm filled">emoji_events</span>
                       </div>
                     )}
                     {credit === 0 && eventDebt === 0 && (
-                      <p className="text-sm font-bold text-gray-500">
+                      <p className="text-base font-black text-gray-600 tracking-tight">
                         R$ 0,00
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="flex justify-between items-center mt-1">
-                  <div className="flex flex-col gap-1">
-                    <p className="text-text-secondary-dark text-xs">{getLastActivityText(player.last_activity)}</p>
-                    {player.balance > 0 && player.credit_updated_at && (
-                      <p className="text-[10px] text-orange-400 font-medium">
-                        Vence em: {getExpirationDateText(player.credit_updated_at)}
                       </p>
                     )}
                   </div>
