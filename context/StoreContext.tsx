@@ -392,14 +392,21 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, []);
 
   const updateProductStock = useCallback(async (productId: string, quantityChange: number) => {
-    const product = products.find(p => p.id === productId);
+    // Fetch latest products to avoid stale state in loops
+    const currentProducts = await storageService.getProducts();
+    const product = currentProducts.find(p => p.id === productId);
+
     if (product) {
       const newStock = product.stock + quantityChange;
       if (newStock < 0) throw new Error(ERROR_MESSAGES.STOCK_INSUFFICIENT);
-      await storageService.updateProduct({ ...product, stock: newStock });
 
+      const updatedProduct = { ...product, stock: newStock };
+      await storageService.updateProduct(updatedProduct);
+
+      // Sync with API
+      apiService.put(`/products/${productId}`, updatedProduct).catch(e => console.error('Cloud sync failed:', e));
     }
-  }, [products]);
+  }, []);
 
   const addParticipantToEvent = useCallback(async (eventId: string, player: Player) => {
     const event = events.find(e => e.id === eventId);
@@ -541,29 +548,51 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, []);
 
   const deleteTransaction = useCallback(async (transactionId: string) => {
-    const transaction = transactions.find(t => t.id === transactionId);
-    if (!transaction) return;
+    console.log('StoreContext: deleteTransaction called', transactionId);
+    try {
+      // Fetch latest transactions to find the one to delete
+      const currentTransactions = await storageService.getTransactions();
+      const transaction = currentTransactions.find(t => t.id === transactionId);
 
-    // Revert player balance
-    const player = players.find(p => p.id === transaction.player_id);
-    if (player) {
-      const newBalance = transaction.type === 'credit'
-        ? player.balance - transaction.amount
-        : player.balance + transaction.amount;
+      if (!transaction) {
+        console.warn('StoreContext: Transaction not found for deletion', transactionId);
+        return;
+      }
 
-      const updatedPlayer = {
-        ...player,
-        balance: newBalance,
-        last_activity: new Date().toISOString()
-      };
+      // Revert player balance
+      const currentPlayers = await storageService.getPlayers();
+      const player = currentPlayers.find(p => p.id === transaction.player_id);
 
-      await storageService.updatePlayer(updatedPlayer);
-      apiService.put(`/players/${player.id}`, updatedPlayer).catch(e => console.error('Cloud sync failed:', e));
+      if (player) {
+        const newBalance = transaction.type === 'credit'
+          ? player.balance - transaction.amount
+          : player.balance + transaction.amount;
+
+        console.log('StoreContext: Reverting player balance', { oldBalance: player.balance, newBalance });
+
+        const updatedPlayer = {
+          ...player,
+          balance: newBalance,
+          last_activity: new Date().toISOString()
+        };
+
+        // Update credit_updated_at if needed
+        if (newBalance <= 0) {
+          updatedPlayer.credit_updated_at = undefined;
+        }
+
+        await storageService.updatePlayer(updatedPlayer);
+        apiService.put(`/players/${player.id}`, updatedPlayer).catch(e => console.error('Cloud sync failed:', e));
+      }
+
+      await storageService.deleteTransaction(transactionId);
+      apiService.delete(`/transactions/${transactionId}`).catch(e => console.error('Cloud sync failed:', e));
+      console.log('StoreContext: Transaction deleted successfully');
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+      throw error;
     }
-
-    await storageService.deleteTransaction(transactionId);
-    apiService.delete(`/transactions/${transactionId}`).catch(e => console.error('Cloud sync failed:', e));
-  }, [transactions, players]);
+  }, []);
 
 
 

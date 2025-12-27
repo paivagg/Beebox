@@ -16,6 +16,7 @@ const POS: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [step, setStep] = useState<'select-player' | 'select-products' | 'review'>('select-player');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Confirmation Modal State
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -100,11 +101,17 @@ const POS: React.FC = () => {
   const handleCheckout = useCallback(() => {
     if (!selectedPlayer) return;
 
-    // 1. Validate Stock
+    // 1. Validate Stock (only for real products, skip custom and event items)
     for (const item of cart) {
-      if (!validateStock(item.id, item.quantity, products)) {
-        error(`${ERROR_MESSAGES.STOCK_INSUFFICIENT}: ${item.name}`);
-        return;
+      // @ts-ignore
+      const isCustom = item.isCustom;
+      const isEvent = item.category === 'Event' || item.category === 'Torneio' || item.category === 'Inscrição';
+
+      if (!isCustom && !isEvent) {
+        if (!validateStock(item.id, item.quantity, products)) {
+          error(`${ERROR_MESSAGES.STOCK_INSUFFICIENT}: ${item.name}`);
+          return;
+        }
       }
     }
 
@@ -144,9 +151,11 @@ const POS: React.FC = () => {
   }, [selectedPlayer, cart, products, total, error]);
 
   const handleConfirmSale = useCallback(async () => {
-    if (!selectedPlayer || !confirmData) return;
+    if (!selectedPlayer || !confirmData || isProcessing) return;
 
+    setIsProcessing(true);
     try {
+      console.log('POS: Starting sale finalization', { selectedPlayer, cart, confirmData, paymentMethod });
       // Save custom items as products if requested
       if (saveCustomAsProduct) {
         for (const item of cart) {
@@ -183,10 +192,9 @@ const POS: React.FC = () => {
         debitProductAmount = confirmData.creditUsed;
         debitEventAmount = 0; // Paid fully in cash
       }
-      // If paymentMethod === 'account', we debit full amounts (default)
 
       // Create Transactions
-      // 1. Products
+      // 1. Products (includes custom items)
       if (productCartItems.length > 0 && debitProductAmount > 0) {
         await addTransaction({
           id: uuidv4(),
@@ -200,9 +208,10 @@ const POS: React.FC = () => {
         });
       }
 
-      // Always update stock for products regardless of payment method
-      if (productCartItems.length > 0) {
-        for (const item of productCartItems) {
+      // Update stock ONLY for real products (not custom items)
+      for (const item of productCartItems) {
+        // @ts-ignore
+        if (!item.isCustom) {
           await updateProductStock(item.id, -item.quantity);
         }
       }
@@ -221,8 +230,10 @@ const POS: React.FC = () => {
         });
       }
 
-      if (eventCartItems.length > 0) {
-        for (const item of eventCartItems) {
+      // Update stock for event items if they are tracked as products
+      for (const item of eventCartItems) {
+        // @ts-ignore
+        if (!item.isCustom) {
           await updateProductStock(item.id, -item.quantity);
         }
       }
@@ -235,10 +246,12 @@ const POS: React.FC = () => {
       setPaymentMethod('cash');
       success(SUCCESS_MESSAGES.SALE_COMPLETED);
     } catch (err) {
-      console.error('POS Error:', err);
+      console.error('POS Error during finalization:', err);
       error('Erro ao processar venda: ' + (err instanceof Error ? err.message : 'Erro desconhecido'));
+    } finally {
+      setIsProcessing(false);
     }
-  }, [selectedPlayer, confirmData, cart, addTransaction, updateProductStock, addProduct, saveCustomAsProduct, success, error, paymentMethod]);
+  }, [selectedPlayer, confirmData, cart, addTransaction, updateProductStock, addProduct, saveCustomAsProduct, success, error, paymentMethod, isProcessing]);
 
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
@@ -505,9 +518,17 @@ const POS: React.FC = () => {
               </button>
               <button
                 onClick={handleConfirmSale}
-                className="flex-1 py-4 rounded-2xl bg-primary text-white font-bold shadow-lg shadow-primary/30 active:scale-95 transition-all"
+                disabled={isProcessing}
+                className="flex-1 py-4 rounded-2xl bg-primary text-white font-bold shadow-lg shadow-primary/30 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                Finalizar
+                {isProcessing ? (
+                  <>
+                    <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                    Processando...
+                  </>
+                ) : (
+                  'Finalizar'
+                )}
               </button>
             </div>
           </div>

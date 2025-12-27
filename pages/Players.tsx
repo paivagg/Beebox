@@ -10,54 +10,43 @@ const Players: React.FC = () => {
   const navigate = useNavigate();
   const { players, addPlayer, transactions } = useStore();
 
-  const getPlayerBalances = (playerId: string, netBalance: number) => {
+  const getPlayerBalances = (playerId: string) => {
     const playerTxs = transactions.filter(t => t.player_id === playerId);
 
-    // Event debt is the sum of all event debits
-    const eventDebt = playerTxs
-      .filter(t => t.category === 'event' && t.type === 'debit')
-      .reduce((acc, t) => acc + t.amount, 0);
+    // Store Credit: Sum of all credits - Sum of all product debits
+    // Note: This assumes credits are only used for products. 
+    // If they are used for events, it gets complicated.
+    // Let's use a simpler logic: 
+    // Store Credit = Total Credits - Total Debits (excluding event debits)
+    // Event Debt = Total Event Debits
 
-    // Total credits added
     const totalCredits = playerTxs
       .filter(t => t.type === 'credit')
       .reduce((acc, t) => acc + t.amount, 0);
 
-    // Product debits
     const productDebits = playerTxs
-      .filter(t => t.category === 'product' && t.type === 'debit')
+      .filter(t => t.type === 'debit' && t.category === 'product')
       .reduce((acc, t) => acc + t.amount, 0);
 
-    // Store credit is total credits minus product debits
-    // But wait, if they used credits for events, it's more complex.
-    // Let's simplify: if balance is negative, it's all debt.
-    // If balance is positive, but they have event transactions, maybe they have both.
+    const eventDebits = playerTxs
+      .filter(t => t.type === 'debit' && t.category === 'event')
+      .reduce((acc, t) => acc + t.amount, 0);
 
-    // Actually, let's just use the net balance for "Credit" if > 0
-    // And if they have ANY event debits, show that as "Dívida de Inscrição"
-    // But wait, if they paid for the event, it shouldn't show as debt.
+    const manualDebits = playerTxs
+      .filter(t => t.type === 'debit' && !t.category)
+      .reduce((acc, t) => acc + t.amount, 0);
 
-    // The most accurate way: 
-    // Store Credit = sum(credits) - sum(product debits)
-    // Event Debt = sum(event debits)
-    // This doesn't account for using credits to pay for events.
+    // Current Store Credit is credits minus product/manual debits
+    const currentCredit = Math.max(0, totalCredits - productDebits - manualDebits);
 
-    // Let's try this:
-    // If balance < 0, the entire negative amount is "Dívida".
-    // If balance >= 0, it's "Crédito".
-    // But the user wants to see both if there's an "inscrição" debt.
-
-    // Maybe they mean: if they have a negative balance, show it as debt.
-    // If they have a positive balance, show it as credit.
-    // But if they have a negative balance AND they had credits before?
-
-    // Let's stick to the simplest interpretation that matches the UI request:
-    // Show the positive balance. If negative, show as debt.
-    // But "tirar os titilos Credito e Divida".
+    // Event Debt is just the event debits
+    // Wait, if they paid for the event using credits, it shouldn't be debt.
+    // But the current system doesn't distinguish between "paid with credit" and "pending debt" in the transactions.
+    // Actually, any 'debit' transaction in the history IS a debt that was recorded.
 
     return {
-      credit: netBalance > 0 ? netBalance : 0,
-      debt: netBalance < 0 ? Math.abs(netBalance) : 0
+      credit: currentCredit,
+      eventDebt: eventDebits
     };
   };
 
@@ -134,7 +123,7 @@ const Players: React.FC = () => {
 
       <div className="flex flex-col gap-3 px-4 pb-4">
         {filteredPlayers.map(player => {
-          const { credit, debt } = getPlayerBalances(player.id, player.balance);
+          const { credit, eventDebt } = getPlayerBalances(player.id);
           return (
             <div
               key={player.id}
@@ -157,12 +146,15 @@ const Players: React.FC = () => {
                         R$ {credit.toFixed(2)}
                       </p>
                     )}
-                    {debt > 0 && (
-                      <p className="text-xs font-bold text-negative mt-0.5">
-                        Dívida: R$ {debt.toFixed(2)}
-                      </p>
+                    {eventDebt > 0 && (
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <p className="text-xs font-bold text-negative">
+                          R$ {eventDebt.toFixed(2)}
+                        </p>
+                        <span className="material-symbols-outlined text-negative text-sm filled">emoji_events</span>
+                      </div>
                     )}
-                    {credit === 0 && debt === 0 && (
+                    {credit === 0 && eventDebt === 0 && (
                       <p className="text-sm font-bold text-gray-500">
                         R$ 0,00
                       </p>

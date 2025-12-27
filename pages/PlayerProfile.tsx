@@ -28,6 +28,33 @@ const PlayerProfile: React.FC = () => {
     .filter(t => t.player_id === id)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+  const getBalances = () => {
+    const totalCredits = playerTransactions
+      .filter(t => t.type === 'credit')
+      .reduce((acc, t) => acc + t.amount, 0);
+
+    const productDebits = playerTransactions
+      .filter(t => t.type === 'debit' && t.category === 'product')
+      .reduce((acc, t) => acc + t.amount, 0);
+
+    const eventDebits = playerTransactions
+      .filter(t => t.type === 'debit' && t.category === 'event')
+      .reduce((acc, t) => acc + t.amount, 0);
+
+    const manualDebits = playerTransactions
+      .filter(t => t.type === 'debit' && !t.category)
+      .reduce((acc, t) => acc + t.amount, 0);
+
+    const currentCredit = Math.max(0, totalCredits - productDebits - manualDebits);
+
+    return {
+      credit: currentCredit,
+      eventDebt: eventDebits
+    };
+  };
+
+  const { credit, eventDebt } = getBalances();
+
   if (!player) return <div className="p-8 text-white text-center">Jogador não encontrado</div>;
 
   const handleTransaction = async () => {
@@ -37,6 +64,7 @@ const PlayerProfile: React.FC = () => {
       id: uuidv4(),
       player_id: player.id,
       type: transactionType,
+      category: transactionType === 'debit' ? 'product' : undefined,
       title: title || (transactionType === 'credit' ? 'Crédito Adicionado' : 'Débito Manual'),
       amount: parseFloat(amount),
       date: new Date().toISOString(),
@@ -133,18 +161,28 @@ const PlayerProfile: React.FC = () => {
 
             <div className="flex flex-col items-center justify-center w-full">
               <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">
-                {player.balance >= 0 ? 'Saldo Disponível' : 'Débito Pendente'}
+                Saldo Disponível
               </p>
-              <div className="flex items-center gap-2">
-                <p className={`text-4xl font-black leading-tight ${player.balance >= 0 ? 'text-positive' : 'text-negative'} drop-shadow-sm`}>
-                  R$ {Math.abs(player.balance).toFixed(2).replace('.', ',')}
-                </p>
-                {player.balance < 0 && (
-                  <span className="material-symbols-outlined text-negative text-2xl animate-pulse">warning</span>
-                )}
-              </div>
-              {player.balance > 0 && player.credit_updated_at && (
-                <p className="text-orange-400/80 text-[10px] font-bold mt-2 uppercase tracking-wider">
+              <p className="text-4xl font-black leading-tight text-positive drop-shadow-sm">
+                R$ {credit.toFixed(2).replace('.', ',')}
+              </p>
+
+              {eventDebt > 0 && (
+                <div className="flex flex-col items-center mt-4 pt-4 border-t border-white/5 w-full">
+                  <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">
+                    Dívida de Inscrição
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-2xl font-black leading-tight text-negative drop-shadow-sm">
+                      R$ {eventDebt.toFixed(2).replace('.', ',')}
+                    </p>
+                    <span className="material-symbols-outlined text-negative text-xl filled">emoji_events</span>
+                  </div>
+                </div>
+              )}
+
+              {credit > 0 && player.credit_updated_at && (
+                <p className="text-orange-400/80 text-[10px] font-bold mt-4 uppercase tracking-wider">
                   Expira em: {new Date(new Date(player.credit_updated_at).getTime() + 60 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')}
                 </p>
               )}
