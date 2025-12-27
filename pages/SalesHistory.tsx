@@ -20,7 +20,7 @@ const SalesHistory: React.FC = () => {
 
   const filteredSales = sales.filter(sale =>
     sale.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    getPlayerName(sale.playerId).toLowerCase().includes(searchTerm.toLowerCase())
+    getPlayerName(sale.player_id).toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const formatDate = (isoString: string) => {
@@ -68,7 +68,7 @@ const SalesHistory: React.FC = () => {
                 </div>
                 <div className="flex flex-col">
                   <p className="text-base font-bold text-white line-clamp-1">{sale.title}</p>
-                  <p className="text-xs text-primary font-medium">{getPlayerName(sale.playerId)}</p>
+                  <p className="text-xs text-primary font-medium">{getPlayerName(sale.player_id)}</p>
                   <p className="text-xs text-gray-400 mt-0.5">{formatDate(sale.date)}</p>
                 </div>
               </div>

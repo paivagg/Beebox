@@ -26,7 +26,7 @@ const CreateEvent: React.FC = () => {
       time: dummyTime,
       price: price ? parseFloat(price.replace(',', '.')) : 0,
       participants: [],
-      maxEnrolled: 0, // No limit visual
+      max_enrolled: 0, // No limit visual
     };
 
     addEvent(newEvent);

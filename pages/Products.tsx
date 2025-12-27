@@ -8,7 +8,7 @@ const Products: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('Todos');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newProductName, setNewProductName] = useState('');
-  
+
   const navigate = useNavigate();
   const { products, addProduct } = useStore();
 
@@ -16,8 +16,8 @@ const Products: React.FC = () => {
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = activeFilter === 'Todos' || 
-                            (activeFilter === 'Estoque Baixo' ? product.stock <= 5 : product.category.includes(activeFilter === 'TCG' ? 'TCG' : activeFilter));
+    const matchesCategory = activeFilter === 'Todos' ||
+      (activeFilter === 'Estoque Baixo' ? product.stock <= 5 : product.category.includes(activeFilter === 'TCG' ? 'TCG' : activeFilter));
     return matchesSearch && matchesCategory;
   });
 
@@ -31,7 +31,7 @@ const Products: React.FC = () => {
       category: 'TCG',
       stock: 0,
       price: 0,
-      imageUrl: 'https://placehold.co/400x400/222/white?text=No+Image',
+      image_url: 'https://placehold.co/400x400/222/white?text=No+Image',
     };
 
     addProduct(newProduct);
@@ -47,24 +47,24 @@ const Products: React.FC = () => {
         <div className="flex justify-between items-center mb-6 pl-1">
           <h1 className="text-3xl font-bold tracking-tighter text-white drop-shadow-md">Produtos</h1>
         </div>
-        
+
         <div className="mb-4">
-           <label className="relative flex w-full h-12">
+          <label className="relative flex w-full h-12">
             {/* Search Icon */}
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 z-10">
               <span className="material-symbols-outlined text-gray-400">search</span>
             </div>
-            
+
             {/* Input */}
-            <input 
-              className="glass-input w-full rounded-2xl pl-12 pr-12 text-base placeholder:text-gray-500 h-12 transition-all focus:border-primary/50" 
-              placeholder="Buscar por nome ou código..." 
+            <input
+              className="glass-input w-full rounded-2xl pl-12 pr-12 text-base placeholder:text-gray-500 h-12 transition-all focus:border-primary/50"
+              placeholder="Buscar por nome ou código..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
 
             {/* Add Button inside Search Bar */}
-            <button 
+            <button
               onClick={() => setIsModalOpen(true)}
               className="absolute inset-y-0 right-0 flex items-center pr-2 z-10"
             >
@@ -77,14 +77,13 @@ const Products: React.FC = () => {
 
         <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
           {filters.map(filter => (
-            <button 
+            <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full px-5 transition-all backdrop-blur-md border border-white/10 ${
-                activeFilter === filter 
-                ? 'bg-primary text-white shadow-lg' 
-                : 'bg-white/5 text-gray-300 hover:bg-white/10'
-              }`}
+              className={`flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full px-5 transition-all backdrop-blur-md border border-white/10 ${activeFilter === filter
+                  ? 'bg-primary text-white shadow-lg'
+                  : 'bg-white/5 text-gray-300 hover:bg-white/10'
+                }`}
             >
               <p className="text-sm font-medium leading-normal">{filter}</p>
             </button>
@@ -94,8 +93,8 @@ const Products: React.FC = () => {
 
       <main className="flex-grow px-4 flex flex-col gap-4 pb-24">
         {filteredProducts.map(product => (
-          <div 
-            key={product.id} 
+          <div
+            key={product.id}
             onClick={() => navigate(`/products/edit/${product.id}`)}
             className="glass-card rounded-2xl p-4 transition-transform active:scale-[0.99] cursor-pointer hover:bg-white/5"
           >
@@ -115,9 +114,9 @@ const Products: React.FC = () => {
                   <span className="truncate">R$ {product.price.toFixed(2).replace('.', ',')}</span>
                 </div>
               </div>
-              <div 
-                className="aspect-square h-28 w-28 flex-shrink-0 rounded-xl bg-cover bg-center bg-no-repeat border border-white/10 shadow-inner" 
-                style={{ backgroundImage: `url("${product.imageUrl}")` }}
+              <div
+                className="aspect-square h-28 w-28 flex-shrink-0 rounded-xl bg-cover bg-center bg-no-repeat border border-white/10 shadow-inner"
+                style={{ backgroundImage: `url("${product.image_url}")` }}
               ></div>
             </div>
           </div>
@@ -130,16 +129,16 @@ const Products: React.FC = () => {
       {/* Add Product Modal (Centered) */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setIsModalOpen(false)}>
-          <div 
+          <div
             className="glass-card w-full max-w-sm rounded-3xl p-6 border border-white/10 shadow-2xl animate-zoom-in flex flex-col"
             onClick={e => e.stopPropagation()}
           >
             <h3 className="text-xl font-bold text-white mb-6 text-center">Novo Produto</h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="text-sm text-gray-400 block mb-2 pl-1">Nome do Produto</label>
-                <input 
+                <input
                   className="glass-input w-full rounded-2xl p-4 text-white placeholder:text-gray-600"
                   placeholder="Ex: Booster Box"
                   value={newProductName}
@@ -148,15 +147,15 @@ const Products: React.FC = () => {
                   autoFocus
                 />
               </div>
-              
+
               <div className="flex gap-3 pt-2">
-                <button 
+                <button
                   onClick={() => setIsModalOpen(false)}
                   className="flex-1 py-3.5 rounded-2xl bg-white/5 text-white font-medium hover:bg-white/10 transition-colors"
                 >
                   Cancelar
                 </button>
-                <button 
+                <button
                   onClick={handleQuickAdd}
                   className="flex-1 py-3.5 rounded-2xl bg-primary text-white font-bold shadow-lg shadow-primary/30 active:scale-95 transition-all"
                 >

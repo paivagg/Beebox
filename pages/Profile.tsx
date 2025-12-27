@@ -22,8 +22,8 @@ const Profile: React.FC = () => {
         <section className="flex flex-col items-center gap-4 py-6">
           <div className="relative">
             <div className="h-28 w-28 rounded-full bg-white/10 flex items-center justify-center border-2 border-white/20 backdrop-blur-md shadow-2xl overflow-hidden">
-              {storeProfile.avatarUrl ? (
-                <img src={storeProfile.avatarUrl} alt="Store Profile" className="h-full w-full object-cover" />
+              {storeProfile.avatar_url ? (
+                <img src={storeProfile.avatar_url} alt="Store Profile" className="h-full w-full object-cover" />
               ) : (
                 <span className="material-symbols-outlined text-5xl text-gray-400">storefront</span>
               )}

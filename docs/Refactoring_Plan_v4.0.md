@@ -72,6 +72,66 @@ graph LR
 3.  **Infrastructure**: **Serverless/Edge** (Vercel + Neon/Turso). No Kubernetes. No EC2. Zero maintenance.
 4.  **API**: **tRPC** over Edge Functions. End-to-end type safety without code generation.
 
+### 🧩 SOLID Principles Integration
+
+To ensure the system remains maintainable and extensible as we scale, we are strictly adhering to SOLID principles, with a focus on **Dependency Injection (DI)** and the **Open/Closed Principle (OCP)**.
+
+#### 1. Dependency Injection (DI)
+**Goal**: Decouple business logic from concrete infrastructure implementations (e.g., swapping `LocalStorage` for `RxDB` or `Postgres` without changing the Service layer).
+
+**Implementation**:
+- Use **Interfaces** for all data access layers (Repositories).
+- Inject dependencies via constructor or React Context.
+
+```typescript
+// Core/Interfaces/IStorageService.ts
+export interface IStorageService {
+  saveTransaction(tx: Transaction): Promise<void>;
+  getTransactions(): Promise<Transaction[]>;
+}
+
+// Infrastructure/RxDBStorageService.ts
+export class RxDBStorageService implements IStorageService {
+  constructor(private db: RxDatabase) {}
+  async saveTransaction(tx: Transaction) { await this.db.transactions.insert(tx); }
+  async getTransactions() { return this.db.transactions.find().exec(); }
+}
+
+// Context/StoreContext.tsx
+// We inject the specific implementation here. Easy to swap for testing or future migrations.
+const storageService: IStorageService = new RxDBStorageService(db);
+```
+
+#### 2. Open/Closed Principle (OCP)
+**Goal**: The system should be *open for extension* but *closed for modification*. We should be able to add new Event Types or Pricing Strategies without rewriting existing code.
+
+**Implementation**:
+- **Strategy Pattern** for Pricing and Event Logic.
+- **Plugin System** for Event Types.
+
+```typescript
+// Core/Strategies/IPricingStrategy.ts
+export interface IPricingStrategy {
+  calculatePrice(product: Product): number;
+}
+
+// Strategies/StandardPricing.ts
+export class StandardPricing implements IPricingStrategy {
+  calculatePrice(p: Product) { return p.basePrice * 1.5; }
+}
+
+// Strategies/VIPEventPricing.ts
+export class VIPEventPricing implements IPricingStrategy {
+  calculatePrice(p: Product) { return p.basePrice * 1.2; } // VIPs get discount
+}
+
+// Usage: The PriceCalculator doesn't care WHICH strategy it uses.
+class PriceCalculator {
+  constructor(private strategy: IPricingStrategy) {}
+  getPrice(product: Product) { return this.strategy.calculatePrice(product); }
+}
+```
+
 ---
 
 ## 📅 Phased Implementation Plan
@@ -120,19 +180,7 @@ app.post('/events/:id/finalize', async (c) => {
 });
 ```
 
-### Phase 3: AI-Powered Features (Weeks 8-10)
-
-**Goal**: Automate manual tasks using AI.
-
-1.  **Card Scanner**:
-    -   Use **TensorFlow.js** (Coco-SSD or custom model) in browser to detect cards via camera.
-    -   Use **Tesseract.js** or Cloud Vision API to read card text.
-2.  **Smart Pricing**:
-    -   Integrate **TCGPlayer API** + **LLM** to suggest prices based on market trends and card condition.
-3.  **Event Assistant**:
-    -   LLM-based query: "Who hasn't paid for the tournament?" -> Returns list.
-
-### Phase 4: Event Logic & Payments (Weeks 11-13)
+### Phase 3: Event Logic & Payments (Weeks 8-10)
 
 **Refined Logic (Implemented)**:
 -   **Finalize Event**:
@@ -169,7 +217,7 @@ const finalizeEvent = useCallback((eventId: string) => {
 }, [events]);
 ```
 
-### Phase 5: "NoOps" Deployment (Weeks 14-16)
+### Phase 4: "NoOps" Deployment (Weeks 11-13)
 
 **Goal**: Automated CI/CD without managing servers.
 

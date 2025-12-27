@@ -1,0 +1,16 @@
+{
+    "name": "tcg-store-manager",
+    "private": true,
+    "version": "2.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc && vite build",
+        "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+        "preview": "vite preview",
+        "vercel:dev": "vercel dev",
+        "vercel:deploy": "vercel --prod",
+        "test:health": "curl http://localhost:3000/health",
+        "test:api": "curl http://localhost:3000/api/players"
+    }
+}

@@ -3,10 +3,13 @@ export interface Player {
   id: string;
   name: string;
   nickname: string;
-  avatarUrl: string;
+  avatar_url: string;
   dci?: string;
+  email?: string;
   balance: number;
-  lastActivity?: string; // ISO String
+  last_activity?: string; // ISO String
+  credit_updated_at?: string; // ISO String
+  updated_at?: string;
 }
 
 export interface Product {
@@ -15,15 +18,16 @@ export interface Product {
   category: string;
   stock: number;
   price: number;
-  imageUrl: string;
-  collection?: string;
-  costPrice?: number;
+  image_url: string;
+  product_collection?: string;
+  cost_price?: number;
+  updated_at?: string;
 }
 
 export interface EventParticipant {
-  playerId: string;
+  player_id: string;
   name: string;
-  avatarUrl: string;
+  avatar_url: string;
   paid: boolean;
 }
 
@@ -33,21 +37,24 @@ export interface Event {
   title: string;
   price: number;
   time: string;
-  maxEnrolled: number;
+  max_enrolled: number;
   participants: EventParticipant[];
   status?: 'scheduled' | 'finalized';
+  updated_at?: string;
 }
 
 export interface Transaction {
   id: string;
-  playerId: string;
+  player_id: string;
   type: 'credit' | 'debit';
   category?: 'product' | 'event' | 'deposit' | 'adjustment';
-  eventId?: string;
+  event_id?: string;
   title: string;
   date: string; // ISO String
   amount: number;
   icon: string;
+  isExpired?: boolean;
+  updated_at?: string;
 }
 
 
@@ -56,13 +63,17 @@ export interface CartItem extends Product {
 }
 
 export interface StoreProfile {
+  id: string;
   name: string;
-  avatarUrl: string;
+  avatar_url: string;
   role: string;
+  updated_at?: string;
 }
 
 export interface StoreSettings {
+  id: string;
   notifications: boolean;
   darkMode: boolean;
   soundEffects: boolean;
+  updated_at?: string;
 }

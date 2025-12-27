@@ -7,7 +7,7 @@ import { Transaction, Product, Player } from '../types';
 const PlayerProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { players, transactions, addTransaction, products, updatePlayer } = useStore();
+  const { players, transactions, addTransaction, products, updatePlayer, deletePlayer, deleteTransaction } = useStore();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -24,17 +24,17 @@ const PlayerProfile: React.FC = () => {
 
   const player = players.find(p => p.id === id);
   const playerTransactions = transactions
-    .filter(t => t.playerId === id)
+    .filter(t => t.player_id === id)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   if (!player) return <div className="p-8 text-white text-center">Jogador não encontrado</div>;
 
-  const handleTransaction = () => {
+  const handleTransaction = async () => {
     if (!amount || isNaN(parseFloat(amount))) return;
 
     const newTx: Transaction = {
       id: Date.now().toString(),
-      playerId: player.id,
+      player_id: player.id,
       type: transactionType,
       title: title || (transactionType === 'credit' ? 'Crédito Adicionado' : 'Débito Manual'),
       amount: parseFloat(amount),
@@ -42,7 +42,7 @@ const PlayerProfile: React.FC = () => {
       icon: transactionType === 'credit' ? 'arrow_upward' : 'arrow_downward'
     };
 
-    addTransaction(newTx);
+    await addTransaction(newTx);
     setIsModalOpen(false);
     setAmount('');
     setTitle('');
@@ -60,6 +60,13 @@ const PlayerProfile: React.FC = () => {
 
     updatePlayer(updatedPlayer);
     setIsEditModalOpen(false);
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm('Tem certeza que deseja excluir este jogador? Esta ação não pode ser desfeita.')) {
+      await deletePlayer(player.id);
+      navigate('/players');
+    }
   };
 
   const openTransactionModal = (type: 'credit' | 'debit') => {
@@ -92,12 +99,20 @@ const PlayerProfile: React.FC = () => {
           <span className="material-symbols-outlined text-xl">arrow_back_ios_new</span>
         </button>
         <h1 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center drop-shadow-md">Perfil</h1>
-        <button
-          onClick={openEditModal}
-          className="glass flex size-10 shrink-0 items-center justify-center rounded-full text-primary hover:text-orange-400"
-        >
-          <span className="material-symbols-outlined text-xl">edit</span>
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={openEditModal}
+            className="glass flex size-10 shrink-0 items-center justify-center rounded-full text-primary hover:text-orange-400"
+          >
+            <span className="material-symbols-outlined text-xl">edit</span>
+          </button>
+          <button
+            onClick={handleDelete}
+            className="glass flex size-10 shrink-0 items-center justify-center rounded-full text-negative hover:text-red-400"
+          >
+            <span className="material-symbols-outlined text-xl">delete</span>
+          </button>
+        </div>
       </header>
 
       <main className="flex-1 px-4 pb-32">
@@ -106,7 +121,7 @@ const PlayerProfile: React.FC = () => {
           <div className="flex gap-4 flex-col items-center">
             <div
               className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 border-4 border-white/10 shadow-2xl"
-              style={{ backgroundImage: `url("${player.avatarUrl}")` }}
+              style={{ backgroundImage: `url("${player.avatar_url}")` }}
             ></div>
             <div className="flex flex-col items-center justify-center">
               <p className="text-white text-[24px] font-bold leading-tight tracking-[-0.015em] text-center drop-shadow-sm">{player.name}</p>
@@ -118,10 +133,22 @@ const PlayerProfile: React.FC = () => {
         {/* Balance Card */}
         <section className="pt-8">
           <div className={`glass-card flex flex-col items-center justify-center rounded-3xl p-8 border ${player.balance >= 0 ? 'border-primary/20' : 'border-negative/20'} shadow-lg`}>
-            <p className="text-gray-400 text-sm font-bold uppercase tracking-widest mb-2">Saldo Atual</p>
-            <p className={`text-5xl font-bold leading-tight tracking-[-0.02em] ${player.balance >= 0 ? 'text-primary' : 'text-negative'} drop-shadow-lg`}>
-              R$ {player.balance.toFixed(2).replace('.', ',')}
+            <p className="text-gray-400 text-sm font-bold uppercase tracking-widest mb-2">
+              {player.balance >= 0 ? 'Saldo em Créditos' : 'Dívida Total'}
             </p>
+            <div className="flex items-center gap-2">
+              <p className={`text-5xl font-bold leading-tight tracking-[-0.02em] ${player.balance >= 0 ? 'text-primary' : 'text-negative'} drop-shadow-lg`}>
+                R$ {Math.abs(player.balance).toFixed(2).replace('.', ',')}
+              </p>
+              {player.balance < 0 && (
+                <span className="material-symbols-outlined text-negative text-4xl animate-pulse">warning</span>
+              )}
+            </div>
+            {player.balance > 0 && player.credit_updated_at && (
+              <p className="text-orange-400 text-xs font-bold mt-4 uppercase tracking-wider">
+                Vence em: {new Date(new Date(player.credit_updated_at).getTime() + 60 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')}
+              </p>
+            )}
           </div>
         </section>
 
@@ -133,7 +160,7 @@ const PlayerProfile: React.FC = () => {
           </div>
           <div className="flex flex-col gap-3">
             {playerTransactions.length > 0 ? playerTransactions.map(tx => (
-              <div key={tx.id} className="glass-card flex items-center justify-between rounded-2xl p-4 transition-transform hover:scale-[1.01]">
+              <div key={tx.id} className={`glass-card flex items-center justify-between rounded-2xl p-4 transition-transform hover:scale-[1.01] ${tx.isExpired ? 'opacity-40 grayscale' : ''}`}>
                 <div className="flex items-center gap-4">
                   <div className={`flex h-12 w-12 items-center justify-center rounded-full backdrop-blur-md ${tx.type === 'credit' ? 'bg-positive/20 text-positive' : 'bg-negative/20 text-negative'}`}>
                     <span className="material-symbols-outlined text-2xl">
@@ -143,11 +170,34 @@ const PlayerProfile: React.FC = () => {
                   <div className="flex flex-col">
                     <p className="text-base font-bold text-white line-clamp-1">{tx.title}</p>
                     <p className="text-sm text-gray-400">{formatDate(tx.date)}</p>
+                    {tx.type === 'credit' && !tx.isExpired && (
+                      <p className="text-[10px] text-orange-400 font-bold mt-0.5 uppercase">
+                        Vence em: {new Date(new Date(tx.date).getTime() + 60 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')}
+                      </p>
+                    )}
+                    {tx.isExpired && (
+                      <p className="text-[10px] text-gray-500 font-bold mt-0.5 uppercase">
+                        Expirado
+                      </p>
+                    )}
                   </div>
                 </div>
-                <p className={`text-base font-bold whitespace-nowrap ${tx.type === 'credit' ? 'text-positive' : 'text-negative'}`}>
-                  {tx.type === 'credit' ? '+' : '-'} R$ {tx.amount.toFixed(2).replace('.', ',')}
-                </p>
+                <div className="flex items-center gap-3">
+                  <p className={`text-base font-bold whitespace-nowrap ${tx.type === 'credit' ? 'text-positive' : 'text-negative'}`}>
+                    {tx.type === 'credit' ? '+' : '-'} R$ {tx.amount.toFixed(2).replace('.', ',')}
+                  </p>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm('Deseja excluir esta transação? O saldo do jogador será revertido.')) {
+                        deleteTransaction(tx.id);
+                      }
+                    }}
+                    className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-white/10 text-gray-400 hover:text-negative transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-lg">delete</span>
+                  </button>
+                </div>
               </div>
             )) : (
               <p className="text-center text-gray-400 py-6 glass-card rounded-2xl">Nenhuma transação encontrada.</p>
@@ -201,7 +251,7 @@ const PlayerProfile: React.FC = () => {
                     >
                       <div
                         className="w-full aspect-square rounded-lg bg-cover bg-center border border-white/10"
-                        style={{ backgroundImage: `url("${product.imageUrl}")` }}
+                        style={{ backgroundImage: `url("${product.image_url}")` }}
                       ></div>
                       <div>
                         <p className="text-xs text-white truncate font-medium">{product.name}</p>

@@ -48,11 +48,11 @@ export const validateProduct = (product: Partial<Product>): ValidationResult => 
     }
 
     // Validar preço de custo se fornecido
-    if (product.costPrice !== undefined && product.costPrice !== null) {
-        if (product.costPrice < 0) {
+    if (product.cost_price !== undefined && product.cost_price !== null) {
+        if (product.cost_price < 0) {
             errors.push('Preço de custo não pode ser negativo');
         }
-        if (product.price !== undefined && product.costPrice > product.price) {
+        if (product.price !== undefined && product.cost_price > product.price) {
             errors.push('Preço de custo não pode ser maior que o preço de venda');
         }
     }
@@ -108,9 +108,9 @@ export const validateEvent = (event: Partial<Event>): ValidationResult => {
     }
 
     // Validar número máximo de inscritos
-    if (event.maxEnrolled === undefined || event.maxEnrolled === null) {
+    if (event.max_enrolled === undefined || event.max_enrolled === null) {
         errors.push('Número máximo de inscritos é obrigatório');
-    } else if (event.maxEnrolled <= 0) {
+    } else if (event.max_enrolled < 0) {
         errors.push(ERROR_MESSAGES.EVENT_MAX_ENROLLED_INVALID);
     }
 

@@ -7,19 +7,19 @@ const StoreData: React.FC = () => {
     const { storeProfile, updateStoreProfile } = useStore();
 
     const [name, setName] = useState(storeProfile.name);
-    const [avatarUrl, setAvatarUrl] = useState(storeProfile.avatarUrl);
+    const [avatar_url, setAvatarUrl] = useState(storeProfile.avatar_url);
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
         setName(storeProfile.name);
-        setAvatarUrl(storeProfile.avatarUrl);
+        setAvatarUrl(storeProfile.avatar_url);
     }, [storeProfile]);
 
     const handleSave = () => {
         setIsSaving(true);
         // Simulate API call
         setTimeout(() => {
-            updateStoreProfile({ name, avatarUrl });
+            updateStoreProfile({ name, avatar_url });
             setIsSaving(false);
             navigate(-1);
         }, 800);
@@ -41,8 +41,8 @@ const StoreData: React.FC = () => {
                 <section className="flex flex-col items-center gap-4">
                     <div className="relative group">
                         <div className="h-32 w-32 rounded-full bg-white/10 flex items-center justify-center border-2 border-white/20 backdrop-blur-md shadow-2xl overflow-hidden">
-                            {avatarUrl ? (
-                                <img src={avatarUrl} alt="Store Profile" className="h-full w-full object-cover" />
+                            {avatar_url ? (
+                                <img src={avatar_url} alt="Store Profile" className="h-full w-full object-cover" />
                             ) : (
                                 <span className="material-symbols-outlined text-5xl text-gray-400">storefront</span>
                             )}
@@ -74,7 +74,7 @@ const StoreData: React.FC = () => {
                         <div className="glass-card rounded-xl p-1">
                             <input
                                 type="text"
-                                value={avatarUrl}
+                                value={avatar_url}
                                 onChange={(e) => setAvatarUrl(e.target.value)}
                                 className="w-full bg-transparent p-3 text-white outline-none placeholder:text-gray-600"
                                 placeholder="https://..."

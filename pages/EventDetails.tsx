@@ -7,7 +7,7 @@ import { Player } from '../types';
 const EventDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { events, players, addParticipantToEvent, toggleEventPayment, addPlayer, removeParticipantFromEvent } = useStore();
+  const { events, players, addParticipantToEvent, toggleEventPayment, addPlayer, removeParticipantFromEvent, deleteEvent, finalizeEvent } = useStore();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -17,6 +17,7 @@ const EventDetails: React.FC = () => {
 
   const totalRevenue = event.participants.length * event.price;
   const paidRevenue = event.participants.filter(p => p.paid).length * event.price;
+  const hasUnpaidParticipants = event.participants.some(p => !p.paid);
 
   const filteredPlayers = players.filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -32,6 +33,23 @@ const EventDetails: React.FC = () => {
     }
   };
 
+  const handleDelete = () => {
+    if (window.confirm('Tem certeza que deseja excluir este evento? Esta ação não pode ser desfeita.')) {
+      deleteEvent(event.id);
+      navigate('/events');
+    }
+  };
+
+  const handleFinalize = async () => {
+    if (window.confirm('Deseja finalizar o evento? Isso irá debitar o valor da inscrição de todos os participantes pendentes.')) {
+      try {
+        await finalizeEvent(event.id);
+      } catch (error) {
+        alert(error instanceof Error ? error.message : 'Erro ao finalizar evento');
+      }
+    }
+  };
+
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
       <header className="sticky top-0 z-20 flex items-center p-4 pb-2 pt-8 justify-between">
@@ -39,22 +57,46 @@ const EventDetails: React.FC = () => {
           <span className="material-symbols-outlined text-xl">arrow_back_ios_new</span>
         </button>
         <h1 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center drop-shadow-md">Detalhes do Evento</h1>
-        <div className="w-10"></div>
+        <button
+          onClick={handleDelete}
+          className="glass flex size-10 shrink-0 items-center justify-center rounded-full text-negative hover:text-red-400"
+        >
+          <span className="material-symbols-outlined text-xl">delete</span>
+        </button>
       </header>
 
       <main className="flex-1 px-4 pb-24 pt-2">
         {/* Info Header */}
         <div className="mb-6 mt-2">
-          <h2 className="text-2xl font-bold text-white mb-2 drop-shadow-md">{event.title}</h2>
-          <div className="flex flex-wrap items-center gap-2 text-gray-300 text-sm">
-            <span className="glass px-2 py-1 rounded-lg flex items-center gap-1">
-              <span className="material-symbols-outlined text-sm">calendar_month</span>
-              {getMonth(event.date)}
-            </span>
-            <span className="glass px-2 py-1 rounded-lg flex items-center gap-1">
-              <span className="material-symbols-outlined text-sm">payments</span>
-              R$ {event.price.toFixed(2)}
-            </span>
+          <div className="flex justify-between items-start">
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-2 drop-shadow-md">{event.title}</h2>
+              <div className="flex flex-wrap items-center gap-2 text-gray-300 text-sm">
+                <span className="glass px-2 py-1 rounded-lg flex items-center gap-1">
+                  <span className="material-symbols-outlined text-sm">calendar_month</span>
+                  {getMonth(event.date)}
+                </span>
+                <span className="glass px-2 py-1 rounded-lg flex items-center gap-1">
+                  <span className="material-symbols-outlined text-sm">payments</span>
+                  R$ {event.price.toFixed(2)}
+                </span>
+                {event.status === 'finalized' && (
+                  <span className={`glass px-2 py-1 rounded-lg flex items-center gap-1 font-bold ${hasUnpaidParticipants ? 'text-negative border border-negative/50' : 'text-positive border border-positive/50'}`}>
+                    <span className="material-symbols-outlined text-sm">{hasUnpaidParticipants ? 'warning' : 'check_circle'}</span>
+                    {hasUnpaidParticipants ? 'Pendências' : 'Finalizado'}
+                  </span>
+                )}
+              </div>
+            </div>
+            {event.status !== 'finalized' && (
+              <button
+                onClick={handleFinalize}
+                className="glass flex items-center gap-1 px-3 py-2 rounded-xl text-primary hover:bg-white/10 transition-colors font-bold text-sm"
+              >
+                <span className="material-symbols-outlined text-lg">flag</span>
+                Finalizar
+              </button>
+            )}
           </div>
         </div>
 
@@ -87,17 +129,17 @@ const EventDetails: React.FC = () => {
         <div className="flex flex-col gap-3">
           {event.participants.length > 0 ? (
             event.participants.map(p => (
-              <div key={p.playerId} className="flex items-center justify-between p-3 glass-card rounded-2xl">
+              <div key={p.player_id} className="flex items-center justify-between p-3 glass-card rounded-2xl">
                 <div className="flex items-center gap-3">
                   <div
                     className="h-10 w-10 rounded-full bg-cover border border-white/10"
-                    style={{ backgroundImage: `url("${p.avatarUrl}")` }}
+                    style={{ backgroundImage: `url("${p.avatar_url}")` }}
                   ></div>
                   <p className="text-white font-medium line-clamp-1">{p.name}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => toggleEventPayment(event.id, p.playerId)}
+                    onClick={() => toggleEventPayment(event.id, p.player_id)}
                     className={`px-4 py-1.5 rounded-xl text-xs font-bold border transition-colors ${p.paid
                       ? 'bg-positive/20 text-positive border-positive/30'
                       : 'bg-negative/20 text-negative border-negative/30'}`}
@@ -105,7 +147,7 @@ const EventDetails: React.FC = () => {
                     {p.paid ? 'PAGO' : 'PENDENTE'}
                   </button>
                   <button
-                    onClick={() => removeParticipantFromEvent(event.id, p.playerId)}
+                    onClick={() => removeParticipantFromEvent(event.id, p.player_id)}
                     className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-negative transition-colors"
                   >
                     <span className="material-symbols-outlined text-lg">delete</span>
@@ -154,21 +196,21 @@ const EventDetails: React.FC = () => {
 
               <div className="grid grid-cols-3 gap-3 overflow-y-auto pb-4 pr-1 scrollbar-thin scrollbar-thumb-white/20">
                 {filteredPlayers.map(player => {
-                  const isAdded = event.participants.some(p => p.playerId === player.id);
+                  const isAdded = event.participants.some(p => p.player_id === player.id);
                   return (
                     <button
                       key={player.id}
                       onClick={() => !isAdded && addParticipantToEvent(event.id, player)}
                       disabled={isAdded}
                       className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all ${isAdded
-                          ? 'bg-primary/20 border-primary opacity-60'
-                          : 'bg-white/5 border-white/5 hover:bg-white/10 active:scale-95'
+                        ? 'bg-primary/20 border-primary opacity-60'
+                        : 'bg-white/5 border-white/5 hover:bg-white/10 active:scale-95'
                         }`}
                     >
                       <div className="relative">
                         <div
                           className="h-12 w-12 rounded-full bg-cover border border-white/10"
-                          style={{ backgroundImage: `url("${player.avatarUrl}")` }}
+                          style={{ backgroundImage: `url("${player.avatar_url}")` }}
                         ></div>
                         {isAdded && (
                           <div className="absolute -top-1 -right-1 bg-primary text-white rounded-full p-0.5 shadow-sm">

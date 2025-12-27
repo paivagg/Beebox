@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
+import { useLocation } from 'react-router-dom';
 import { Event } from '../types';
 
 const Events: React.FC = () => {
@@ -12,6 +13,7 @@ const Events: React.FC = () => {
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
   const [price, setPrice] = useState('');
+  const [maxEnrolled, setMaxEnrolled] = useState('0');
 
   // Finalize Event State
   const [finalizeModalOpen, setFinalizeModalOpen] = useState(false);
@@ -19,13 +21,26 @@ const Events: React.FC = () => {
   const [finalizeStats, setFinalizeStats] = useState<{ pendingCount: number; totalAmount: number } | null>(null);
 
   const navigate = useNavigate();
+  const location = useLocation();
   const { events, addEvent, finalizeEvent } = useStore();
 
+  // Handle auto-open modal from query param
+  React.useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('create') === 'true') {
+      setIsModalOpen(true);
+      // Clean up the URL
+      navigate('/events', { replace: true });
+    }
+  }, [location.search, navigate]);
+
   const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   const filteredEvents = events.filter(e => {
     const eventDate = new Date(e.date);
-    return filter === 'upcoming' ? eventDate >= now : eventDate < now;
+    const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+    return filter === 'upcoming' ? eventDay >= todayStart : eventDay < todayStart;
   }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   const getDay = (dateStr: string) => {
@@ -57,7 +72,7 @@ const Events: React.FC = () => {
       time: dummyTime,
       price: price ? parseFloat(price.replace(',', '.')) : 0,
       participants: [],
-      maxEnrolled: 0,
+      max_enrolled: parseInt(maxEnrolled) || 0,
       status: 'scheduled'
     };
 
@@ -66,6 +81,7 @@ const Events: React.FC = () => {
     setTitle('');
     setDate('');
     setPrice('');
+    setMaxEnrolled('0');
   };
 
   const openFinalizeModal = (e: React.MouseEvent, event: Event) => {
@@ -106,8 +122,8 @@ const Events: React.FC = () => {
           <button
             onClick={() => setFilter('upcoming')}
             className={`flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-xl px-2 text-sm font-medium leading-normal transition-all ${filter === 'upcoming'
-                ? 'bg-white/10 shadow-sm text-white'
-                : 'text-text-secondary-dark hover:text-white'
+              ? 'bg-white/10 shadow-sm text-white'
+              : 'text-text-secondary-dark hover:text-white'
               }`}
           >
             <span className="truncate">Próximos</span>
@@ -115,8 +131,8 @@ const Events: React.FC = () => {
           <button
             onClick={() => setFilter('past')}
             className={`flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-xl px-2 text-sm font-medium leading-normal transition-all ${filter === 'past'
-                ? 'bg-white/10 shadow-sm text-white'
-                : 'text-text-secondary-dark hover:text-white'
+              ? 'bg-white/10 shadow-sm text-white'
+              : 'text-text-secondary-dark hover:text-white'
               }`}
           >
             <span className="truncate">Anteriores</span>
@@ -217,6 +233,17 @@ const Events: React.FC = () => {
                   placeholder="0,00"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="text-sm text-gray-400 block mb-2 pl-1">Limite de Vagas (0 = Ilimitado)</label>
+                <input
+                  className="glass-input w-full rounded-2xl p-4 text-white placeholder:text-gray-600"
+                  type="number"
+                  placeholder="0"
+                  value={maxEnrolled}
+                  onChange={(e) => setMaxEnrolled(e.target.value)}
                 />
               </div>
 

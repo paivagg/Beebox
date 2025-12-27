@@ -1,0 +1,36 @@
+name: Neon Database Branching
+
+on:
+  pull_request:
+    types: [opened, synchronized, reopened, closed]
+
+jobs:
+  manage-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Neon Branch
+        if: github.event.action != 'closed'
+        uses: neondatabase/create-branch-action@v5
+        with:
+          project_id: ${{ secrets.NEON_PROJECT_ID }}
+          parent_id: main
+          branch_name: pr-${{ github.event.pull_request.number }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+        id: create-branch
+
+      - name: Delete Neon Branch
+        if: github.event.action == 'closed'
+        uses: neondatabase/delete-branch-action@v3
+        with:
+          project_id: ${{ secrets.NEON_PROJECT_ID }}
+          branch_name: pr-${{ github.event.pull_request.number }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+
+      - name: Comment PR with Connection String
+        if: github.event.action != 'closed'
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            🚀 Neon Database branch created for this PR!
+            Connection string: `${{ steps.create-branch.outputs.db_url }}`
+            Use this in your Vercel Preview environment.
