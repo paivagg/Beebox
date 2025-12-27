@@ -149,7 +149,7 @@ const Players: React.FC = () => {
                     {eventDebt > 0 && (
                       <div className="flex items-center gap-1 mt-0.5">
                         <p className="text-xs font-bold text-negative">
-                          R$ {eventDebt.toFixed(2)}
+                          - R$ {eventDebt.toFixed(2)}
                         </p>
                         <span className="material-symbols-outlined text-negative text-sm filled">emoji_events</span>
                       </div>

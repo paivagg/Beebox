@@ -174,7 +174,7 @@ const PlayerProfile: React.FC = () => {
                   </p>
                   <div className="flex items-center gap-2">
                     <p className="text-2xl font-black leading-tight text-negative drop-shadow-sm">
-                      R$ {eventDebt.toFixed(2).replace('.', ',')}
+                      - R$ {eventDebt.toFixed(2).replace('.', ',')}
                     </p>
                     <span className="material-symbols-outlined text-negative text-xl filled">emoji_events</span>
                   </div>

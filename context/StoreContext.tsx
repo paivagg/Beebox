@@ -305,25 +305,28 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const addProduct = useCallback(async (product: Product) => {
     const validation = validateProduct(product);
     if (!validation.isValid) throw new Error(validation.errors.join(', '));
-    await storageService.saveProduct(product);
+    const productWithTime = { ...product, updated_at: new Date().toISOString() };
+    await storageService.saveProduct(productWithTime);
 
-    apiService.post('/products', product).catch(e => console.error('Cloud sync failed:', e));
+    apiService.post('/products', productWithTime).catch(e => console.error('Cloud sync failed:', e));
   }, []);
 
   const updateProduct = useCallback(async (updatedProduct: Product) => {
     const validation = validateProduct(updatedProduct);
     if (!validation.isValid) throw new Error(validation.errors.join(', '));
-    await storageService.updateProduct(updatedProduct);
+    const productWithTime = { ...updatedProduct, updated_at: new Date().toISOString() };
+    await storageService.updateProduct(productWithTime);
 
-    apiService.put(`/products/${updatedProduct.id}`, updatedProduct).catch(e => console.error('Cloud sync failed:', e));
+    apiService.put(`/products/${updatedProduct.id}`, productWithTime).catch(e => console.error('Cloud sync failed:', e));
   }, []);
 
   const addEvent = useCallback(async (event: Event) => {
     const validation = validateEvent(event);
     if (!validation.isValid) throw new Error(validation.errors.join(', '));
-    await storageService.saveEvent(event);
+    const eventWithTime = { ...event, updated_at: new Date().toISOString() };
+    await storageService.saveEvent(eventWithTime);
 
-    apiService.post('/events', event).catch(e => console.error('Cloud sync failed:', e));
+    apiService.post('/events', eventWithTime).catch(e => console.error('Cloud sync failed:', e));
   }, []);
 
   const addPlayer = useCallback(async (name: string, email?: string) => {
@@ -337,7 +340,8 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       email,
       avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`,
       balance: 0,
-      last_activity: new Date().toISOString()
+      last_activity: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
     await storageService.savePlayer(newPlayer);
 
@@ -345,9 +349,10 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, []);
 
   const updatePlayer = useCallback(async (updatedPlayer: Player) => {
-    await storageService.updatePlayer(updatedPlayer);
+    const playerWithTime = { ...updatedPlayer, updated_at: new Date().toISOString() };
+    await storageService.updatePlayer(playerWithTime);
 
-    apiService.put(`/players/${updatedPlayer.id}`, updatedPlayer).catch(e => console.error('Cloud sync failed:', e));
+    apiService.put(`/players/${updatedPlayer.id}`, playerWithTime).catch(e => console.error('Cloud sync failed:', e));
   }, []);
 
   const addTransaction = useCallback(async (transaction: Transaction) => {
@@ -369,7 +374,8 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         const updatedPlayerData: Player = {
           ...player,
           balance: newBalance,
-          last_activity: new Date().toISOString()
+          last_activity: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         };
 
         // Track when credits are added or updated
@@ -400,7 +406,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       const newStock = product.stock + quantityChange;
       if (newStock < 0) throw new Error(ERROR_MESSAGES.STOCK_INSUFFICIENT);
 
-      const updatedProduct = { ...product, stock: newStock };
+      const updatedProduct = { ...product, stock: newStock, updated_at: new Date().toISOString() };
       await storageService.updateProduct(updatedProduct);
 
       // Sync with API
@@ -422,7 +428,8 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
       const updatedEvent = {
         ...event,
-        participants: [...event.participants, newParticipant]
+        participants: [...event.participants, newParticipant],
+        updated_at: new Date().toISOString()
       };
 
       await storageService.updateEvent(updatedEvent);
@@ -470,7 +477,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     try {
       if (pendingParticipants.length === 0) {
-        await storageService.updateEvent({ ...event, status: 'finalized' });
+        await storageService.updateEvent({ ...event, status: 'finalized', updated_at: new Date().toISOString() });
       } else {
         for (const participant of pendingParticipants) {
           await storageService.saveTransaction({
@@ -482,7 +489,8 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             title: `Inscrição: ${event.title}`,
             date: new Date().toISOString(),
             amount: event.price,
-            icon: 'emoji_events'
+            icon: 'emoji_events',
+            updated_at: new Date().toISOString()
           });
 
           const player = players.find(p => p.id === participant.player_id);
@@ -490,7 +498,8 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             await storageService.updatePlayer({
               ...player,
               balance: player.balance - event.price,
-              last_activity: new Date().toISOString()
+              last_activity: new Date().toISOString(),
+              updated_at: new Date().toISOString()
             });
           }
           processed++;

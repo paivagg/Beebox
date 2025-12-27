@@ -148,6 +148,10 @@ export class RxDBStorageService implements IStorageService {
                         throw error;
                     }
 
+                    if (data && data.length > 0) {
+                        console.log(`[Pull] Received ${data.length} docs for ${tableName}`);
+                    }
+
                     // Conflict resolution: Last-Write-Wins (LWW)
                     const resolvedDocs = [];
                     for (const remoteDoc of data || []) {
@@ -178,6 +182,7 @@ export class RxDBStorageService implements IStorageService {
             push: {
                 handler: async (docs: any[]) => {
                     try {
+                        console.log(`[Push] Sending ${docs.length} docs for ${tableName}`);
                         const { error } = await this.supabase
                             .from(tableName)
                             .upsert(docs.map(doc => {
@@ -195,6 +200,7 @@ export class RxDBStorageService implements IStorageService {
                             }
                             throw error;
                         }
+                        console.log(`[Push] Successfully synced ${docs.length} docs for ${tableName}`);
                         return [];
                     } catch (error) {
                         console.error(`Push handler error for ${tableName}:`, error);
