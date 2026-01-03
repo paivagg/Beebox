@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
+import { useAlert } from '../context/AlertContext';
 
 const Settings: React.FC = () => {
     const navigate = useNavigate();
@@ -10,11 +11,19 @@ const Settings: React.FC = () => {
         updateStoreSettings({ [key]: !storeSettings[key] });
     };
 
+    const { showAlert } = useAlert();
+
     const handleDeleteData = () => {
-        if (window.confirm('TEM CERTEZA? Esta ação irá apagar TODOS os dados locais (jogadores, produtos, transações) e não pode ser desfeita.')) {
-            resetStore();
-            navigate('/');
-        }
+        showAlert({
+            title: 'Excluir Todos os Dados',
+            message: 'TEM CERTEZA? Esta ação irá apagar TODOS os dados locais (jogadores, produtos, transações) e não pode ser desfeita.',
+            type: 'error',
+            confirmText: 'Sim, Excluir Tudo',
+            onConfirm: () => {
+                resetStore();
+                navigate('/');
+            }
+        });
     };
 
     return (

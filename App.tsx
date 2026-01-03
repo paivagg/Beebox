@@ -56,38 +56,42 @@ const Layout = () => {
   );
 };
 
+import { AlertProvider } from './context/AlertContext';
+
 const App: React.FC = () => {
   const { toasts, hideToast } = useToast();
 
   return (
     <AuthProvider>
       <StoreProvider>
-        <ToastContainer toasts={toasts} onClose={hideToast} />
-        <HashRouter>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={
-              <RequireAuth>
-                <Layout />
-              </RequireAuth>
-            }>
-              <Route index element={<Dashboard />} />
-              <Route path="players" element={<Players />} />
-              <Route path="products" element={<Products />} />
-              <Route path="events" element={<Events />} />
-              <Route path="player/:id" element={<PlayerProfile />} />
-              <Route path="products/add" element={<AddProduct />} />
-              <Route path="products/edit/:id" element={<AddProduct />} />
-              <Route path="events/:id" element={<EventDetails />} />
-              <Route path="pos" element={<POS />} />
-              <Route path="analytics" element={<Analytics />} />
-              <Route path="sales-history" element={<SalesHistory />} />
-              <Route path="profile" element={<Profile />} />
-              <Route path="store-data" element={<StoreData />} />
-              <Route path="settings" element={<Settings />} />
-            </Route>
-          </Routes>
-        </HashRouter>
+        <AlertProvider>
+          <ToastContainer toasts={toasts} onClose={hideToast} />
+          <HashRouter>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/" element={
+                <RequireAuth>
+                  <Layout />
+                </RequireAuth>
+              }>
+                <Route index element={<Dashboard />} />
+                <Route path="players" element={<Players />} />
+                <Route path="products" element={<Products />} />
+                <Route path="events" element={<Events />} />
+                <Route path="player/:id" element={<PlayerProfile />} />
+                <Route path="products/add" element={<AddProduct />} />
+                <Route path="products/edit/:id" element={<AddProduct />} />
+                <Route path="events/:id" element={<EventDetails />} />
+                <Route path="pos" element={<POS />} />
+                <Route path="analytics" element={<Analytics />} />
+                <Route path="sales-history" element={<SalesHistory />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="store-data" element={<StoreData />} />
+                <Route path="settings" element={<Settings />} />
+              </Route>
+            </Routes>
+          </HashRouter>
+        </AlertProvider>
       </StoreProvider>
     </AuthProvider>
   );

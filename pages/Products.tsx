@@ -7,11 +7,9 @@ import { v4 as uuidv4 } from 'uuid';
 const Products: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('Todos');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newProductName, setNewProductName] = useState('');
 
   const navigate = useNavigate();
-  const { products, addProduct } = useStore();
+  const { products } = useStore();
 
   const filters = ['Todos', 'TCG', 'Acessórios', 'Estoque Baixo'];
 
@@ -21,26 +19,6 @@ const Products: React.FC = () => {
       (activeFilter === 'Estoque Baixo' ? product.stock <= 5 : product.category.includes(activeFilter === 'TCG' ? 'TCG' : activeFilter));
     return matchesSearch && matchesCategory;
   });
-
-  const handleQuickAdd = () => {
-    if (!newProductName.trim()) return;
-
-    const newId = uuidv4();
-    const newProduct: Product = {
-      id: newId,
-      name: newProductName,
-      category: 'TCG',
-      stock: 0,
-      price: 0,
-      image_url: 'https://placehold.co/400x400/222/white?text=No+Image',
-    };
-
-    addProduct(newProduct);
-    setIsModalOpen(false);
-    setNewProductName('');
-    // Redirect to edit page to fill in details
-    navigate(`/products/edit/${newId}`);
-  };
 
   return (
     <div className="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
@@ -66,7 +44,7 @@ const Products: React.FC = () => {
 
             {/* Add Button inside Search Bar */}
             <button
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => navigate('/products/add')}
               className="absolute inset-y-0 right-0 flex items-center pr-2 z-10"
             >
               <div className="flex items-center justify-center h-10 w-10 bg-primary rounded-xl shadow-lg hover:bg-orange-600 active:scale-95 transition-all">
@@ -135,46 +113,7 @@ const Products: React.FC = () => {
         )}
       </main>
 
-      {/* Add Product Modal (Centered) */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setIsModalOpen(false)}>
-          <div
-            className="glass-card w-full max-w-sm rounded-3xl p-6 border border-white/10 shadow-2xl animate-zoom-in flex flex-col"
-            onClick={e => e.stopPropagation()}
-          >
-            <h3 className="text-xl font-bold text-white mb-6 text-center">Novo Produto</h3>
 
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm text-gray-400 block mb-2 pl-1">Nome do Produto</label>
-                <input
-                  className="glass-input w-full rounded-2xl p-4 text-white placeholder:text-gray-600"
-                  placeholder="Ex: Booster Box"
-                  value={newProductName}
-                  onChange={(e) => setNewProductName(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleQuickAdd()}
-                  autoFocus
-                />
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={() => setIsModalOpen(false)}
-                  className="flex-1 py-3.5 rounded-2xl bg-white/5 text-white font-medium hover:bg-white/10 transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleQuickAdd}
-                  className="flex-1 py-3.5 rounded-2xl bg-primary text-white font-bold shadow-lg shadow-primary/30 active:scale-95 transition-all"
-                >
-                  Continuar
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { Player } from '../types';
+import { useAlert } from '../context/AlertContext';
 
 const EventDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -33,21 +34,39 @@ const EventDetails: React.FC = () => {
     }
   };
 
+  const { showAlert } = useAlert();
+
   const handleDelete = () => {
-    if (window.confirm('Tem certeza que deseja excluir este evento? Esta ação não pode ser desfeita.')) {
-      deleteEvent(event.id);
-      navigate('/events');
-    }
+    showAlert({
+      title: 'Excluir Evento',
+      message: 'Tem certeza que deseja excluir este evento? Esta ação não pode ser desfeita.',
+      type: 'warning',
+      confirmText: 'Excluir',
+      onConfirm: () => {
+        deleteEvent(event.id);
+        navigate('/events');
+      }
+    });
   };
 
   const handleFinalize = async () => {
-    if (window.confirm('Deseja finalizar o evento? Isso irá debitar o valor da inscrição de todos os participantes pendentes.')) {
-      try {
-        await finalizeEvent(event.id);
-      } catch (error) {
-        alert(error instanceof Error ? error.message : 'Erro ao finalizar evento');
+    showAlert({
+      title: 'Finalizar Evento',
+      message: 'Deseja finalizar o evento? Isso irá debitar o valor da inscrição de todos os participantes pendentes.',
+      type: 'info',
+      confirmText: 'Finalizar',
+      onConfirm: async () => {
+        try {
+          await finalizeEvent(event.id);
+        } catch (error) {
+          showAlert({
+            title: 'Erro',
+            message: error instanceof Error ? error.message : 'Erro ao finalizar evento',
+            type: 'error'
+          });
+        }
       }
-    }
+    });
   };
 
   return (

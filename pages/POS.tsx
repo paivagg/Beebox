@@ -2,6 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { useToast } from '../hooks/useToast';
+import { useAlert } from '../context/AlertContext';
 import { CartItem, Player } from '../types';
 import { validateStock } from '../utils/validators';
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../utils/constants';
@@ -10,7 +11,8 @@ import { v4 as uuidv4 } from 'uuid';
 const POS: React.FC = () => {
   const navigate = useNavigate();
   const { players, products, addTransaction, updateProductStock, addProduct } = useStore();
-  const { success, error } = useToast();
+  const { success } = useToast();
+  const { showAlert } = useAlert();
 
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -51,7 +53,11 @@ const POS: React.FC = () => {
 
       // Validar estoque
       if (!validateStock(product.id, newQuantity, products)) {
-        error(`${ERROR_MESSAGES.STOCK_INSUFFICIENT}: ${product.name}`);
+        showAlert({
+          title: 'Estoque Insuficiente',
+          message: `${ERROR_MESSAGES.STOCK_INSUFFICIENT}: ${product.name}`,
+          type: 'error'
+        });
         return prev;
       }
 
@@ -60,7 +66,7 @@ const POS: React.FC = () => {
       }
       return [...prev, { ...product, quantity: 1 }];
     });
-  }, [products, error]);
+  }, [products, showAlert]);
 
   const removeFromCart = (productId: string) => {
     setCart(prev => prev.filter(item => item.id !== productId));
@@ -109,7 +115,11 @@ const POS: React.FC = () => {
 
       if (!isCustom && !isEvent) {
         if (!validateStock(item.id, item.quantity, products)) {
-          error(`${ERROR_MESSAGES.STOCK_INSUFFICIENT}: ${item.name}`);
+          showAlert({
+            title: 'Estoque Insuficiente',
+            message: `${ERROR_MESSAGES.STOCK_INSUFFICIENT}: ${item.name}`,
+            type: 'error'
+          });
           return;
         }
       }
@@ -148,7 +158,7 @@ const POS: React.FC = () => {
     });
     setPaymentMethod('cash'); // Default to cash for difference
     setIsConfirmModalOpen(true);
-  }, [selectedPlayer, cart, products, total, error]);
+  }, [selectedPlayer, cart, products, total, showAlert]);
 
   const handleConfirmSale = useCallback(async () => {
     if (!selectedPlayer || !confirmData || isProcessing) return;
@@ -247,11 +257,15 @@ const POS: React.FC = () => {
       success(SUCCESS_MESSAGES.SALE_COMPLETED);
     } catch (err) {
       console.error('POS Error during finalization:', err);
-      error('Erro ao processar venda: ' + (err instanceof Error ? err.message : 'Erro desconhecido'));
+      showAlert({
+        title: 'Erro na Venda',
+        message: 'Erro ao processar venda: ' + (err instanceof Error ? err.message : 'Erro desconhecido'),
+        type: 'error'
+      });
     } finally {
       setIsProcessing(false);
     }
-  }, [selectedPlayer, confirmData, cart, addTransaction, updateProductStock, addProduct, saveCustomAsProduct, success, error, paymentMethod, isProcessing]);
+  }, [selectedPlayer, confirmData, cart, addTransaction, updateProductStock, addProduct, saveCustomAsProduct, success, showAlert, paymentMethod, isProcessing]);
 
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
@@ -414,7 +428,7 @@ const POS: React.FC = () => {
 
       {/* Footer / Cart Summary */}
       {(step === 'select-products' || step === 'review') && cart.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 md:left-auto md:right-8 md:bottom-8 w-full md:w-96 glass border-t md:border border-white/10 p-5 pb-8 md:pb-5 z-30 rounded-t-3xl md:rounded-3xl backdrop-blur-xl shadow-2xl">
+        <div className="fixed bottom-24 left-0 right-0 md:left-auto md:right-8 md:bottom-8 w-full md:w-96 glass border-t md:border border-white/10 p-5 pb-5 md:pb-5 z-50 rounded-t-3xl md:rounded-3xl backdrop-blur-xl shadow-2xl">
           <div className="flex justify-between items-center mb-4 px-2">
             <p className="text-gray-300 font-medium">{cart.reduce((a, b) => a + b.quantity, 0)} itens</p>
             <p className="text-2xl font-bold text-primary drop-shadow-sm">R$ {total.toFixed(2)}</p>

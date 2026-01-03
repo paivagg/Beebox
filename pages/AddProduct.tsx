@@ -197,7 +197,7 @@ const AddProduct: React.FC = () => {
         </main>
 
         {/* Mobile Save Button */}
-        <div className="fixed bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black via-black/80 to-transparent z-30 md:hidden">
+        <div className="fixed bottom-24 left-0 w-full p-6 bg-gradient-to-t from-black via-black/80 to-transparent z-50 md:hidden">
           <button
             onClick={handleSave}
             className="w-full py-4 rounded-2xl bg-primary text-white font-bold text-lg shadow-lg shadow-primary/30 active:scale-[0.98] transition-all hover:bg-orange-600"

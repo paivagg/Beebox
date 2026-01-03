@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { Transaction, Product, Player } from '../types';
 import { v4 as uuidv4 } from 'uuid';
+import { useAlert } from '../context/AlertContext';
 
 const PlayerProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -144,11 +145,19 @@ const PlayerProfile: React.FC = () => {
     setIsEditModalOpen(false);
   };
 
+  const { showAlert } = useAlert();
+
   const handleDelete = async () => {
-    if (window.confirm('Tem certeza que deseja excluir este jogador? Esta ação não pode ser desfeita.')) {
-      await deletePlayer(player.id);
-      navigate('/players');
-    }
+    showAlert({
+      title: 'Excluir Jogador',
+      message: 'Tem certeza que deseja excluir este jogador? Esta ação não pode ser desfeita.',
+      type: 'warning',
+      confirmText: 'Excluir',
+      onConfirm: async () => {
+        await deletePlayer(player.id);
+        navigate('/players');
+      }
+    });
   };
 
   const openTransactionModal = (type: 'credit' | 'debit') => {
@@ -303,9 +312,13 @@ const PlayerProfile: React.FC = () => {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (window.confirm('Deseja excluir esta transação? O saldo do jogador será revertido.')) {
-                        deleteTransaction(tx.id);
-                      }
+                      showAlert({
+                        title: 'Excluir Transação',
+                        message: 'Deseja excluir esta transação? O saldo do jogador será revertido.',
+                        type: 'warning',
+                        confirmText: 'Excluir',
+                        onConfirm: () => deleteTransaction(tx.id)
+                      });
                     }}
                     className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-white/10 text-gray-400 hover:text-negative transition-colors"
                   >
@@ -321,7 +334,7 @@ const PlayerProfile: React.FC = () => {
       </main>
 
       {/* Action Bar */}
-      <nav className="fixed bottom-6 left-4 right-4 z-30 flex justify-center lg:hidden">
+      <nav className="fixed bottom-24 left-4 right-4 z-50 flex justify-center lg:hidden">
         <div className="flex w-full max-w-sm justify-around items-center rounded-3xl glass-nav p-2 gap-3">
           <button
             onClick={() => openTransactionModal('credit')}

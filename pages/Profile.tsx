@@ -2,10 +2,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
+import { useAlert } from '../context/AlertContext';
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
   const { storeProfile, players, transactions } = useStore();
+  const { showAlert } = useAlert();
 
   const handleExportBackup = () => {
     // Header
@@ -83,9 +85,13 @@ const Profile: React.FC = () => {
 
             <button
               onClick={() => {
-                if (window.confirm('Tem certeza que deseja sair?')) {
-                  navigate('/');
-                }
+                showAlert({
+                  title: 'Sair da Conta',
+                  message: 'Tem certeza que deseja sair?',
+                  type: 'warning',
+                  confirmText: 'Sair',
+                  onConfirm: () => navigate('/')
+                });
               }}
               className="flex w-full items-center justify-center gap-2 p-4 rounded-2xl text-negative hover:bg-negative/10 transition-colors mt-4 border border-negative/20"
             >
