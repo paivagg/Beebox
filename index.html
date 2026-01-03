@@ -145,16 +145,32 @@
       }
 
       .glass-input {
-        background: rgba(255, 255, 255, 0.05);
+        background-color: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(4px);
         color: white;
+        color-scheme: dark;
       }
       
+      /* Fix for Tailwind Forms plugin overrides */
+      input[type='date'].glass-input,
+      input[type='datetime-local'].glass-input,
+      input[type='number'].glass-input,
+      input[type='email'].glass-input,
+      input[type='text'].glass-input,
+      input[type='password'].glass-input,
+      input[type='search'].glass-input,
+      textarea.glass-input,
+      select.glass-input {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: white;
+      }
+
       .glass-input:focus {
-        background: rgba(255, 255, 255, 0.1);
+        background-color: rgba(255, 255, 255, 0.1);
         border-color: rgba(244, 140, 37, 0.5); /* Primary color alpha */
         outline: none;
+        box-shadow: none;
       }
 
       .glass-nav {

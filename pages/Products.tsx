@@ -92,7 +92,7 @@ const Products: React.FC = () => {
         </div>
       </div>
 
-      <main className="flex-grow px-4 grid grid-cols-2 lg:grid-cols-3 gap-4 pb-24 max-w-[1400px] mx-auto w-full">
+      <main className="flex-grow px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-24 max-w-[1400px] mx-auto w-full content-start">
         {filteredProducts.map(product => (
           <div
             key={product.id}

@@ -5,7 +5,47 @@ import { useStore } from '../context/StoreContext';
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
-  const { storeProfile } = useStore();
+  const { storeProfile, players, transactions } = useStore();
+
+  const handleExportBackup = () => {
+    // Header
+    const csvRows = [['Nome', 'Email', 'Créditos Totais (R$)', 'Débitos Totais (R$)', 'Saldo Atual (R$)']];
+
+    players.forEach(player => {
+      const playerTxs = transactions.filter(t => t.player_id === player.id);
+
+      const totalCredits = playerTxs
+        .filter(t => t.type === 'credit')
+        .reduce((acc, t) => acc + t.amount, 0);
+
+      const totalDebits = playerTxs
+        .filter(t => t.type === 'debit')
+        .reduce((acc, t) => acc + t.amount, 0);
+
+      // Escape quotes in names
+      const safeName = `"${player.name.replace(/"/g, '""')}"`;
+      const safeEmail = `"${(player.email || '').replace(/"/g, '""')}"`;
+
+      csvRows.push([
+        safeName,
+        safeEmail,
+        totalCredits.toFixed(2).replace('.', ','),
+        totalDebits.toFixed(2).replace('.', ','),
+        player.balance.toFixed(2).replace('.', ',')
+      ]);
+    });
+
+    const csvContent = "data:text/csv;charset=utf-8,"
+      + csvRows.map(e => e.join(";")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `backup_jogadores_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
@@ -57,66 +97,19 @@ const Profile: React.FC = () => {
           {/* Menu Section */}
           <section className="lg:col-span-2 flex flex-col gap-6">
             <div className="space-y-3">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider pl-2">Geral</p>
-              <div className="glass-card rounded-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
-                <button
-                  onClick={() => navigate('/store-data')}
-                  className="flex items-center justify-between p-6 hover:bg-white/5 transition-colors border-r border-b border-white/5"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-400">
-                      <span className="material-symbols-outlined text-2xl">store</span>
-                    </div>
-                    <div className="text-left">
-                      <span className="text-base font-bold text-white block">Dados da Loja</span>
-                      <span className="text-xs text-gray-500">Nome, logo e endereço</span>
-                    </div>
-                  </div>
-                  <span className="material-symbols-outlined text-gray-500">chevron_right</span>
-                </button>
-
-                <button
-                  onClick={() => navigate('/settings')}
-                  className="flex items-center justify-between p-6 hover:bg-white/5 transition-colors border-b border-white/5"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400">
-                      <span className="material-symbols-outlined text-2xl">settings</span>
-                    </div>
-                    <div className="text-left">
-                      <span className="text-base font-bold text-white block">Configurações</span>
-                      <span className="text-xs text-gray-500">Preferências do app</span>
-                    </div>
-                  </div>
-                  <span className="material-symbols-outlined text-gray-500">chevron_right</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-3">
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider pl-2">Sistema</p>
-              <div className="glass-card rounded-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
-                <button className="flex items-center justify-between p-6 hover:bg-white/5 transition-colors border-r border-white/5">
+              <div className="glass-card rounded-2xl overflow-hidden grid grid-cols-1">
+                <button
+                  onClick={handleExportBackup}
+                  className="flex items-center justify-between p-6 hover:bg-white/5 transition-colors"
+                >
                   <div className="flex items-center gap-4">
                     <div className="h-12 w-12 rounded-xl bg-green-500/20 flex items-center justify-center text-green-400">
-                      <span className="material-symbols-outlined text-2xl">cloud_upload</span>
+                      <span className="material-symbols-outlined text-2xl">download</span>
                     </div>
                     <div className="text-left">
-                      <span className="text-base font-bold text-white block">Backup</span>
-                      <span className="text-xs text-gray-500">Sincronizar nuvem</span>
-                    </div>
-                  </div>
-                  <span className="material-symbols-outlined text-gray-500">chevron_right</span>
-                </button>
-
-                <button className="flex items-center justify-between p-6 hover:bg-white/5 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-yellow-500/20 flex items-center justify-center text-yellow-400">
-                      <span className="material-symbols-outlined text-2xl">help</span>
-                    </div>
-                    <div className="text-left">
-                      <span className="text-base font-bold text-white block">Suporte</span>
-                      <span className="text-xs text-gray-500">Ajuda e tutoriais</span>
+                      <span className="text-base font-bold text-white block">Backup (CSV)</span>
+                      <span className="text-xs text-gray-500">Exportar dados dos jogadores</span>
                     </div>
                   </div>
                   <span className="material-symbols-outlined text-gray-500">chevron_right</span>

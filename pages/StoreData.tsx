@@ -25,6 +25,17 @@ const StoreData: React.FC = () => {
         }, 800);
     };
 
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setAvatarUrl(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     return (
         <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background">
             <header className="sticky top-0 z-20 flex items-center p-4 pb-2 pt-8 justify-between bg-background/80 backdrop-blur-md md:static md:bg-transparent">
@@ -47,9 +58,15 @@ const StoreData: React.FC = () => {
                                     <span className="material-symbols-outlined text-6xl text-gray-400">storefront</span>
                                 )}
                             </div>
-                            <button className="absolute bottom-2 right-2 h-12 w-12 rounded-full bg-primary flex items-center justify-center shadow-lg hover:bg-orange-600 transition-colors cursor-pointer border-4 border-[#121212]">
+                            <label className="absolute bottom-2 right-2 h-12 w-12 rounded-full bg-primary flex items-center justify-center shadow-lg hover:bg-orange-600 transition-colors cursor-pointer border-4 border-[#121212]">
                                 <span className="material-symbols-outlined text-white">photo_camera</span>
-                            </button>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handleFileChange}
+                                />
+                            </label>
                         </div>
                         <p className="text-sm text-gray-400">Toque para alterar a foto da loja</p>
                     </section>
@@ -67,17 +84,7 @@ const StoreData: React.FC = () => {
                             />
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-400 uppercase tracking-wider pl-1">URL da Imagem de Perfil</label>
-                            <input
-                                type="text"
-                                value={avatar_url}
-                                onChange={(e) => setAvatarUrl(e.target.value)}
-                                className="glass-input w-full rounded-2xl p-4 text-white placeholder:text-gray-600"
-                                placeholder="https://..."
-                            />
-                            <p className="text-xs text-gray-500 pl-1">Cole um link direto para a imagem.</p>
-                        </div>
+
 
                         {/* Save Button */}
                         <button

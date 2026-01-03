@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { Transaction, Product, Player } from '../types';
@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 const PlayerProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { players, transactions, addTransaction, products, updatePlayer, deletePlayer, deleteTransaction } = useStore();
+  const { players, transactions, addTransaction, products, addProduct, updatePlayer, deletePlayer, deleteTransaction } = useStore();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -21,6 +21,61 @@ const PlayerProfile: React.FC = () => {
   // Edit Profile State
   const [editName, setEditName] = useState('');
   const [editEmail, setEditEmail] = useState('');
+
+  // Product Search & Create State
+  const [productSearch, setProductSearch] = useState('');
+  const [isCreatingProduct, setIsCreatingProduct] = useState(false);
+  const [newProductName, setNewProductName] = useState('');
+  const [newProductPrice, setNewProductPrice] = useState('');
+
+  // Calculate Best Sellers
+  const sortedProducts = useMemo(() => {
+    const productSales: Record<string, number> = {};
+
+    transactions.forEach(t => {
+      if (t.type === 'debit' && t.category === 'product' && t.title) {
+        // Try to match by name if we don't have product_id in transaction (legacy)
+        // Ideally transactions should have product_id
+        const product = products.find(p => p.name === t.title);
+        if (product) {
+          productSales[product.id] = (productSales[product.id] || 0) + 1;
+        }
+      }
+    });
+
+    return [...products].sort((a, b) => {
+      const salesA = productSales[a.id] || 0;
+      const salesB = productSales[b.id] || 0;
+      return salesB - salesA;
+    });
+  }, [products, transactions]);
+
+  const filteredProducts = useMemo(() => {
+    return sortedProducts.filter(p =>
+      p.name.toLowerCase().includes(productSearch.toLowerCase())
+    );
+  }, [sortedProducts, productSearch]);
+
+  const handleCreateProduct = async () => {
+    if (!newProductName || !newProductPrice) return;
+
+    const newProduct: Product = {
+      id: uuidv4(),
+      name: newProductName,
+      price: parseFloat(newProductPrice.replace(',', '.')),
+      category: 'Outros', // Default category
+      stock: 0,
+      image_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(newProductName)}&background=random&color=fff&background=F97316`
+    };
+
+    await addProduct(newProduct);
+
+    // Reset and select
+    setIsCreatingProduct(false);
+    setNewProductName('');
+    setNewProductPrice('');
+    handleProductSelect(newProduct);
+  };
 
   const player = players.find(p => p.id === id);
   const playerTransactions = transactions
@@ -297,28 +352,82 @@ const PlayerProfile: React.FC = () => {
               {transactionType === 'credit' ? 'Adicionar Crédito' : 'Novo Gasto'}
             </h3>
 
-            {/* Product Carousel for Debit */}
+            {/* Product Selection Section */}
             {transactionType === 'debit' && (
-              <div className="mb-6">
-                <p className="text-xs text-gray-400 mb-3 font-bold uppercase tracking-wider">Seleção Rápida</p>
-                <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
-                  {products.map(product => (
-                    <div
-                      key={product.id}
-                      onClick={() => handleProductSelect(product)}
-                      className="glass flex-shrink-0 w-24 flex flex-col gap-2 cursor-pointer p-2 rounded-xl hover:bg-white/10 transition-colors active:scale-95"
-                    >
-                      <div
-                        className="w-full aspect-square rounded-lg bg-cover bg-center border border-white/10"
-                        style={{ backgroundImage: `url("${product.image_url}")` }}
-                      ></div>
-                      <div>
-                        <p className="text-xs text-white truncate font-medium">{product.name}</p>
-                        <p className="text-xs font-bold text-primary">R$ {product.price.toFixed(2)}</p>
-                      </div>
-                    </div>
-                  ))}
+              <div className="mb-6 space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Seleção Rápida</p>
+                  <button
+                    onClick={() => setIsCreatingProduct(!isCreatingProduct)}
+                    className="text-xs text-primary font-bold hover:underline flex items-center gap-1"
+                  >
+                    <span className="material-symbols-outlined text-sm">{isCreatingProduct ? 'close' : 'add'}</span>
+                    {isCreatingProduct ? 'Cancelar' : 'Novo Produto'}
+                  </button>
                 </div>
+
+                {isCreatingProduct ? (
+                  <div className="glass-card p-3 rounded-xl border border-white/10 space-y-3 animate-fade-in">
+                    <input
+                      className="glass-input w-full rounded-lg p-2 text-sm text-white placeholder:text-gray-600"
+                      placeholder="Nome do Produto"
+                      value={newProductName}
+                      onChange={e => setNewProductName(e.target.value)}
+                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        className="glass-input flex-1 rounded-lg p-2 text-sm text-white placeholder:text-gray-600"
+                        placeholder="Preço (R$)"
+                        value={newProductPrice}
+                        onChange={e => setNewProductPrice(e.target.value)}
+                      />
+                      <button
+                        onClick={handleCreateProduct}
+                        disabled={!newProductName || !newProductPrice}
+                        className="bg-primary text-white px-4 rounded-lg font-bold text-sm disabled:opacity-50"
+                      >
+                        Salvar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="relative">
+                      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-lg">search</span>
+                      <input
+                        className="glass-input w-full rounded-xl py-2 pl-10 pr-4 text-sm text-white placeholder:text-gray-600"
+                        placeholder="Buscar produto..."
+                        value={productSearch}
+                        onChange={e => setProductSearch(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
+                      {filteredProducts.map(product => (
+                        <div
+                          key={product.id}
+                          onClick={() => handleProductSelect(product)}
+                          className="glass flex-shrink-0 w-24 flex flex-col gap-2 cursor-pointer p-2 rounded-xl hover:bg-white/10 transition-colors active:scale-95 group relative"
+                        >
+                          <div
+                            className="w-full aspect-square rounded-lg bg-cover bg-center border border-white/10 group-hover:border-primary/50 transition-colors"
+                            style={{ backgroundImage: `url("${product.image_url}")` }}
+                          ></div>
+                          <div>
+                            <p className="text-xs text-white truncate font-medium group-hover:text-primary transition-colors">{product.name}</p>
+                            <p className="text-xs font-bold text-gray-400">R$ {product.price.toFixed(2)}</p>
+                          </div>
+                        </div>
+                      ))}
+                      {filteredProducts.length === 0 && (
+                        <div className="w-full text-center py-4 text-gray-500 text-xs">
+                          Nenhum produto encontrado
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             )}
 
